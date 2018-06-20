@@ -1,0 +1,25 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.configure("2") do |config|
+  config.vm.boot_timeout = 600
+  config.vm.guest = :windows
+  config.windows.halt_timeout = 15
+
+  config.vm.communicator = "winrm"
+  config.winrm.username = "vagrant"
+  config.winrm.password = "vagrant"
+
+  config.vm.provider :libvirt do |libvirt, override|
+    libvirt.disk_bus = "virtio"
+    libvirt.nic_model_type = "virtio"
+    libvirt.video_type = "qxl"
+    libvirt.sound_type = "ich6"
+    libvirt.graphics_type = "spice"
+    libvirt.channel :type => 'unix',     :target_name => 'org.qemu.guest_agent.0', :target_type => 'virtio'
+    libvirt.channel :type => 'spicevmc', :target_name => 'com.redhat.spice.0',     :target_type => 'virtio'
+    libvirt.random :model => 'random'
+    libvirt.memory = 3072
+  end
+
+end
