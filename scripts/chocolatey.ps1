@@ -14,7 +14,7 @@ Import-Module "$env:ChocolateyInstall\helpers\chocolateyProfile.psm1"
 Import-Module "$env:ChocolateyInstall\helpers\chocolateyInstaller.psm1"
 
 # Install msys2
-choco install --force -r -y msys2
+choco install -r -y msys2
 Update-SessionEnvironment
 Install-ChocolateyPath "C:\tools\msys64\usr\bin" -PathType 'Machine'
 
