@@ -7,7 +7,8 @@ $ErrorActionPreference = "Stop"
 dism.exe /online /Cleanup-Image /StartComponentCleanup /ResetBase
 
 # Compact the windows installation
-Stop-Service wuauserv
+sc.exe config wuauserv start= disabled
+sc.exe stop wuauserv
 
 # From: https://github.com/windowsbox/powershellmodules (WindowsBox.Compact)
 Optimize-DiskUsage
