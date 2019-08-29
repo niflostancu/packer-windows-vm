@@ -2,7 +2,7 @@
 # vi: set ft=ruby :
 
 Vagrant.configure("2") do |config|
-  config.vm.boot_timeout = 600
+  config.vm.boot_timeout = 1200
   config.vm.guest = :windows
   config.windows.halt_timeout = 15
 
@@ -11,6 +11,7 @@ Vagrant.configure("2") do |config|
   config.winrm.password = "vagrant"
 
   config.vm.provider :libvirt do |libvirt, override|
+    libvirt.machine_virtual_size = 30
     libvirt.disk_bus = "virtio"
     libvirt.nic_model_type = "virtio"
     libvirt.video_type = "qxl"

@@ -11,8 +11,10 @@ Set-NetConnectionProfile -InterfaceIndex (Get-NetConnectionProfile).InterfaceInd
 
 # Set up WinRM and configure some things
 Set-WSManQuickConfig -Force | out-null
+Set-Item WSMan:\localhost\MaxTimeoutms -Value 3600000 | out-null
 Set-Item WSMan:\localhost\Service\AllowUnencrypted -Value True | out-null
 Set-Item WSMan:\localhost\Service\Auth\Basic -Value True | out-null
+
 Set-Service WinRM -StartupType Automatic | out-null
 Restart-Service winrm | out-null
 

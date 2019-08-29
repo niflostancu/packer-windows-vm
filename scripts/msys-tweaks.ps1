@@ -25,7 +25,7 @@ New-Item -ItemType Directory -Force -Path "C:\\Users\\vagrant\\.ssh" | out-null
 Invoke-WebRequest -Uri "https://raw.github.com/hashicorp/vagrant/master/keys/vagrant.pub" -Outfile "C:\\Users\\vagrant\\.ssh\\authorized_keys"
 
 # Configure msys2 openssh to run as service
-& $msysRoot\usr\bin\bash "C:\tools\msys-sshd.sh"
+& $msysRoot\usr\bin\bash "C:\Windows\vmfiles\msys-sshd.sh"
 
 ## Add firewall exception
 netsh advfirewall firewall add rule name=SSHPort dir=in action=allow protocol=TCP localport=22

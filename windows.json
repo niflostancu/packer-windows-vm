@@ -1,6 +1,6 @@
 {
   "variables": {
-    "vm_name": "win10ltsb",
+    "vm_name": "win10ltsc",
     "arch": "amd64",
     "iso_url": "",
     "iso_checksum_type": "none",
@@ -11,7 +11,7 @@
     "winrm_username": "vagrant",
     "winrm_password": "vagrant",
     "winrm_timeout": "6h",
-    "disk_size": "30000",
+    "disk_size": "20000",
     "memory": "4096",
     "cpus": "2",
     "http_directory": "http",
@@ -50,15 +50,15 @@
         [ "-drive", "file={{ user `output_directory` }}/{{ .Name }},if=virtio,cache=writeback,discard=unmap,format=qcow2,index=1" ]
       ],
 
-      "shutdown_command": "shutdown /s /t 0 /f",
-      "shutdown_timeout": "15m"
+      "shutdown_command": "exit 0",
+      "shutdown_timeout": "30m"
     }
   ],
   "provisioners": [
     {
         "type": "file",
-        "source": "scripts/fix-network.ps1",
-        "destination": "C:\\Windows\\fix-network.ps1"
+        "source": "scripts/machine/",
+        "destination": "C:/Windows/vmfiles"
     },
     {
       "type": "powershell",
@@ -74,11 +74,6 @@
     {
       "type": "windows-restart",
       "restart_timeout": "4h"
-    },
-    {
-        "type": "file",
-        "source": "scripts/msys-sshd.sh",
-        "destination": "C:\\tools\\msys-sshd.sh"
     },
     {
       "type": "powershell",
@@ -97,6 +92,13 @@
       "execute_command": "powershell -ExecutionPolicy Bypass -Command \"{{.Path}}\"",
       "scripts": [
         "scripts/cleanup.ps1"
+      ]
+    },
+    {
+      "type": "powershell",
+      "execute_command": "powershell -ExecutionPolicy Bypass -Command \"{{.Path}}\"",
+      "scripts": [
+        "scripts/sysprep.ps1"
       ]
     }
   ],

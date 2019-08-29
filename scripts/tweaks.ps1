@@ -10,15 +10,22 @@ Install-Module -Name 'WindowsBox.Compact'
 
 # Add the fix-network.ps1 script to Startup
 $action = New-ScheduledTaskAction -Execute 'Powershell.exe' `
-  -Argument '-ExecutionPolicy Bypass -WindowStyle Hidden C:\Windows\fix-network.ps1'
+  -Argument '-ExecutionPolicy Bypass -WindowStyle Hidden C:\Windows\vmfiles\fix-network.ps1'
 $trigger = New-ScheduledTaskTrigger -AtLogOn
 Register-ScheduledTask -Action $action -Trigger $trigger -TaskName "FixNetwork" `
   -Description "Sets Networks to Private"
 
-# Disable hibernation
+# configure powersaving and screen saver
+powercfg -setactive 8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c # High Performance
+powercfg -change -monitor-timeout-ac 0
 Set-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Power' -Name HiberFileSizePercent -value 0 | out-null
 Set-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Power' -name HibernateEnabled -value 0 | out-null
-& powercfg /h off
+powercfg -hibernate OFF
+New-Itemproperty -Path "registry::HKCU\Control Panel\Desktop" -Name ScreenSaveActive -Value 0 -PropertyType "DWord" -Force | out-null
+New-Itemproperty -Path "registry::HKCU\Control Panel\Desktop" -Name ScreenSaveTimeOut -Value 0 -PropertyType "DWord" -Force | out-null
+New-Itemproperty -Path "registry::HKU\.DEFAULT\Control Panel\Desktop" -Name ScreenSaveActive -Value 0 -PropertyType "DWord" -Force | out-null
+New-Itemproperty -Path "registry::HKU\.DEFAULT\Control Panel\Desktop" -Name ScreenSaveTimeOut -Value 0 -PropertyType "DWord" -Force | out-null
+
 
 # Disable automatic pagefile management
 $cs = gwmi Win32_ComputerSystem
