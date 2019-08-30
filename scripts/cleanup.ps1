@@ -4,7 +4,7 @@
 $ErrorActionPreference = "Stop"
 
 # Clean Windows startup image
-dism.exe /online /Cleanup-Image /StartComponentCleanup /ResetBase
+dism.exe /online /Quiet /Cleanup-Image /StartComponentCleanup /ResetBase
 
 # Compact the windows installation
 sc.exe config wuauserv start= disabled

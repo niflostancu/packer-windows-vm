@@ -7,7 +7,7 @@ $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";"
 $msysRoot = "C:\tools\msys64"
 
 ## Install Msys tools (git, rsync, openssh)
-& $msysRoot\usr\bin\pacman -S --noconfirm git openssh cygrunsrv mingw-w64-x86_64-editrights rsync
+& $msysRoot\usr\bin\pacman -S --noconfirm --needed git openssh cygrunsrv mingw-w64-x86_64-editrights rsync
 
 # add mounts for user home and /vagrant (used by the default rsync)
 New-Item -ItemType directory -Force -Path "$msysRoot\vagrant" | out-null
@@ -30,5 +30,4 @@ Invoke-WebRequest -Uri "https://raw.github.com/hashicorp/vagrant/master/keys/vag
 ## Add firewall exception
 netsh advfirewall firewall add rule name=SSHPort dir=in action=allow protocol=TCP localport=22
 netsh advfirewall firewall add rule name="MSyS sshd" dir=in action=allow program="$msysRoot\usr\bin\sshd.exe" enable=yes
-
 
