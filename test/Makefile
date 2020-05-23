@@ -1,4 +1,7 @@
-BOX_NAME=me/Win10LTSB_x64
+# Makefile for Vagrant box tests
+
+TEST_BOX_NAME=Win10_LTSC
+export TEST_BOX_NAME
 
 all: test
 

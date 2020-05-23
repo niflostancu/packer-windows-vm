@@ -1,9 +1,13 @@
-box_name = ENV["TEST_BOX_NAME"] || "me/Win10LTSB_x64"
+box_name = ENV["TEST_BOX_NAME"] || "NOT_FOUND"
 
 Vagrant.configure("2") do |config|
   config.vm.box = box_name
 
-	config.vm.synced_folder ".", "/vagrant", type: "rsync"
+  config.vm.provider :libvirt do |libvirt|
+    libvirt.default_prefix = "Win10_Test_"
+  end
+
+  config.vm.synced_folder ".", "/vagrant", type: "rsync"
 
   config.vm.provision "file", source: "flag.txt", destination: "C:\\Users\\vagrant\\flag.txt"
   config.vm.provision "shell", path: "bootstrap.ps1"

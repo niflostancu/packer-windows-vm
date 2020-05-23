@@ -1,4 +1,3 @@
-#
 # Brings Windows up to date.
 #
 
@@ -30,6 +29,7 @@ New-Item $WindowsUpdatePath -Force | out-null
 New-Item $AutoUpdatePath -Force | out-null
 Set-ItemProperty -Path $AutoUpdatePath -Name NoAutoUpdate -Value 1 | out-null
 
+# disable auto update
 Get-ScheduledTask -TaskPath "\Microsoft\Windows\WindowsUpdate\" | Disable-ScheduledTask
 takeown /F C:\Windows\System32\Tasks\Microsoft\Windows\UpdateOrchestrator /A /R | out-null
 icacls C:\Windows\System32\Tasks\Microsoft\Windows\UpdateOrchestrator /grant Administrators:F /T | out-null

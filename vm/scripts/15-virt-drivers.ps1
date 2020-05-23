@@ -22,7 +22,7 @@ Get-ChildItem $qemuDriversPath -Include *.inf -Recurse | Where{$_.FullName -like
   PNPUtil.exe /add-driver $_.FullName /install | out-null
 }
 # Install qemu-ga
-Start-Process -Wait "$qemuDriversPath\guest-agent\qemu-ga-x64.msi" /qn
+Start-Process -Wait "$qemuDriversPath\guest-agent\qemu-ga-x86_64.msi" /qn
 
 Write-Output 'Installing the Spice Guest Tools...'
 
@@ -30,7 +30,9 @@ $spiceDownloadUrl ='https://spice-space.org/download/windows/spice-guest-tools/s
 $spiceDownloadPath =  'C:\Windows\Temp\spice-guest-tools.exe'
 $client = new-object System.Net.WebClient
 $client.DownloadFile($spiceDownloadUrl, $spiceDownloadPath)
+$client.Dispose()
 & $spiceDownloadPath /S
 
 Write-Output 'Done, rebooting...'
+exit 0
 

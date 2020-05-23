@@ -1,70 +1,125 @@
 # Makefile for building the images
 
 # user variables
-VM_NAME = Win10_LTSC_2019_x64
 TMP_DIR = /tmp/packer
-VM_INSTALL_ISO = REQUIRED
-VM_VIRTIO_ISO = REQUIRED
-REUSE_IMAGE = 
+OS_INSTALL_ISO = REQUIRED
+VIRTIO_INSTALL_ISO = REQUIRED
+
 PACKER = packer
-TRANSFORMER = ./build/packer-transform.rb
+PACKER_ARGS = -on-error=abort -var "debug=$(DEBUG)"
+DEBUG =  # set to 1 to keep the files at the end of the operation
+PAUSE = $(DEBUG)
+TRANSFORMER = ./build/packer-transform.py
 
-VM_DIR = $(TMP_DIR)/$(VM_NAME)/
-INPUT_FILE = Windows_x64.yaml
-PACKER_ARGS = -on-error=abort
-PACKER_TMP_DIR = $(TMP_DIR)
-TMPDIR = $(TMP_DIR)
-PACKER_CACHE_DIR = $(TMP_DIR)/packer_cache/
+# Fresh Ubuntu 18.04 base install
+BASE_VM_NAME = Win10_LTSC_base
+BASE_PACKER_CONFIG = base/win10_x64_base.yaml
+BASE_VM_IMAGE = $(TMP_DIR)/$(BASE_VM_NAME)/$(BASE_VM_NAME).qcow2
 
-# export environment vars
-export PACKER_TMP_DIR PACKER_CACHE_DIR TMPDIR VM_NAME VM_DIR VM_INSTALL_ISO VM_VIRTIO_ISO
+# main RL scripts image (from BASE)
+WIN_VM_NAME = Win10_LTSC_VM
+WIN_VM_PACKER_CONFIG = vm/win10_vm.yaml
+WIN_VM_IMAGE = $(TMP_DIR)/$(WIN_VM_NAME)/$(WIN_VM_NAME).qcow2
+
+WIN_VAGRANT_PACKER_CONFIG = vm/win10_vagrant_full.yaml
+
+PACKER_ARGS += -var 'virtio_win_iso=$(VIRTIO_INSTALL_ISO)'
 
 # include local customizations file
+include build/utils.mk
 include local.mk
 
-# Packer image building
-BASE_IMAGE = $(TMP_DIR)/$(VM_NAME)/$(VM_NAME)
-REUSE_NEW_IMAGE = $(TMP_DIR)/$(VM_NAME)_new/$(VM_NAME)
-ifeq ($(REUSE_IMAGE),1)
-PACKER_ARGS := $(PACKER_ARGS) -var "use_disk_image=true" -var "iso_url=$(BASE_IMAGE)"
-VM_DIR = $(TMP_DIR)/$(VM_NAME)_new/
-endif
+# VM build targets
+all: vm
+.PHONY: all
 
-build: $(TMP_DIR)/
-	$(if $(DELETE),rm -rf "$(VM_DIR)/",)
-	cat $(INPUT_FILE) | $(TRANSFORMER) | $(PACKER) build $(PACKER_ARGS) -only=qemu -
+# Base image
+BASE_DEPS = base/win10_x64_base.yaml $(wildcard base/scripts/*)
+base: $(BASE_VM_IMAGE)
+$(BASE_VM_IMAGE): $(BASE_DEPS) | $(TMP_DIR)/
+	$(call packer_gen_build, $(BASE_PACKER_CONFIG), \
+		$(BASE_VM_NAME), $(OS_INSTALL_ISO))
 
-validate:
-	cat $(INPUT_FILE) | $(TRANSFORMER) | $(PACKER) validate -
+# base VM editing using a backing disk (for quickly applying updates)
+base_edit: PACKER_ARGS += -var 'use_backing_file=1'
+base_edit: $(BASE_DEPS) | $(BASE_VM_IMAGE)
+	$(call packer_gen_build, $(BASE_PACKER_CONFIG), \
+		$(BASE_VM_NAME)_tmp, $(BASE_VM_IMAGE))
+# commits the edited image back to the original
+BASE_VM_TMP_IMAGE = $(TMP_DIR)/$(BASE_VM_NAME)_tmp/$(BASE_VM_NAME)_tmp.qcow2
+base_commit:
+	qemu-img commit "$(BASE_VM_TMP_IMAGE)"
+	rm -rf "$(TMP_DIR)/$(BASE_VM_NAME)_tmp/"
 
-# when REUSE_IMAGE=1: commits the image back into its backing image
-commit:
-	# packer uses symlink inside packer_cache which gets deleted, so update the
-	# backing file reference to its real path
-	qemu-img rebase -f qcow2 -u -b "$(BASE_IMAGE)" "$(REUSE_NEW_IMAGE)"
-	qemu-img commit "$(REUSE_NEW_IMAGE)"
+.PHONY: base base_edit base_commit
+
+# The final Windows VM with programs / scripts installed
+VM_DEPS = vm/win10_vm.yaml $(wildcard vm/scripts/*)
+vm: $(WIN_VM_IMAGE)
+$(WIN_VM_IMAGE): PACKER_ARGS += -var 'use_backing_file=1'
+$(WIN_VM_IMAGE): $(VM_DEPS)
+	$(call packer_gen_build, $(WIN_VM_PACKER_CONFIG), \
+		$(WIN_VM_NAME), $(BASE_VM_IMAGE))
+
+# Edit an existing VM image
+vm_edit: PACKER_ARGS += -var 'use_backing_file=1'
+vm_edit: $(VM_DEPS)
+	$(call packer_gen_build, $(WIN_VM_PACKER_CONFIG), \
+		$(WIN_VM_NAME)_tmp, $(WIN_VM_IMAGE))
+# commits the edited image back to the original
+WIN_VM_TMP_IMAGE = $(TMP_DIR)/$(WIN_VM_NAME)_tmp/$(WIN_VM_NAME)_tmp.qcow2
+vm_commit:
+	qemu-img commit "$(WIN_VM_TMP_IMAGE)"
+	rm -rf "$(TMP_DIR)/$(WIN_VM_NAME)_tmp/"
+
+.PHONY: vm vm_edit vm_commit
 
 $(TMP_DIR)/:
 	mkdir -p $(TMP_DIR)/
 
 print-%  : ; @echo $* = $($*)
 
-.PHONY: build validate
-
 # targets for Vagrant image build / installation
 
-VAGRANT_BOX_PATH = $(HOME)/.vagrant.d/boxes/me-VAGRANTSLASH-$(VM_NAME)/0/libvirt/box.img
-LIBVIRT_IMG_NAME = me-VAGRANTSLASH-$(VM_NAME)_vagrant_box_image_0.img
+# creates a large vagrant .box with the full image
+vagrant_full: $(WIN_VM_PACKER_CONFIG)
+	$(call packer_gen_build, $(WIN_VAGRANT_PACKER_CONFIG), \
+		$(WIN_VM_NAME)_vagrant, $(WIN_VM_IMAGE))
 
-metadata: $(VM_DIR)/metadata.json
-$(VM_DIR)/metadata.json:
-	BOX_SHA=$$(sha256sum "$(VM_DIR)/$(VM_NAME)-libvirt.box" | awk '{print $$1}'); \
-			sed -e "s|{{LIBVIRT_BOX_FILE}}|$(VM_NAME)-libvirt.box|g" \
-			-e "s|{{LIBVIRT_BOX_SHA}}|$$BOX_SHA|g" \
-			metadata/win10_x64_metadata.json > $(VM_DIR)/metadata.json
+# Creates a light box (containing a small image with the VM disk as backed file)
+# You need to manually copy the backing image to the libvirt storage
+VAGRANT_BOX_DEST=$(TMP_DIR)/$(WIN_VM_NAME)_vagrant
+VAGRANT_BACKING_FILE = $(VAGRANT_BOX_DEST)/$(WIN_VM_NAME).qcow2
+vagrant_lite: $(VAGRANT_BOX_DEST)/metadata.json $(VAGRANT_BOX_DEST)/box.img
+	cp "Vagrantfile.template" "$(VAGRANT_BOX_DEST)/Vagrantfile"
+	tar cvzf "$(VAGRANT_BOX_DEST)/$(WIN_VM_NAME).box" -C "$(VAGRANT_BOX_DEST)" ./metadata.json ./Vagrantfile ./box.img
 
-install: $(VM_DIR)/metadata.json
-	(cd "$(VM_DIR)"; vagrant box add "metadata.json" --name "me/$(VM_NAME)")
+define VAGRANT_METADATA
+{
+    "provider": "libvirt", 
+	"format": "qcow2", 
+	"virtual_size": 20
+}
+endef
+export VAGRANT_METADATA
 
-.PHONY: metadata install
+$(VAGRANT_BOX_DEST)/metadata.json:
+	@mkdir -p "$(VAGRANT_BOX_DEST)" && \
+	echo "$$VAGRANT_METADATA" > "$(VAGRANT_BOX_DEST)/metadata.json"
+
+$(VAGRANT_BACKING_FILE): $(VAGRANT_BOX_DEST)/metadata.json
+	qemu-img convert -f qcow2 -O qcow2 "$(WIN_VM_IMAGE)" "$@"
+
+$(VAGRANT_BOX_DEST)/box.img: $(VAGRANT_BACKING_FILE)
+	qemu-img create -f qcow2 -b "$(WIN_VM_NAME).qcow2" "$@"
+
+# uploads the backing image to the given libvirt storage pool
+virt_install: | $(VAGRANT_BACKING_FILE)
+	VOL_NAME="$$(basename "$(VAGRANT_BACKING_FILE)")" && \
+	virsh -c "$(LIBVIRT_CONNECTION)" vol-create-as "$(LIBVIRT_POOL)" \
+		"$$VOL_NAME" 20G --format qcow2 --allocation 0; \
+	virsh -c "$(LIBVIRT_CONNECTION)" vol-upload --pool "$(LIBVIRT_POOL)" \
+		"$$VOL_NAME" "$(VAGRANT_BACKING_FILE)"
+
+.PHONY: vagrant_lite vagrant_full vagrant_lite_install
 

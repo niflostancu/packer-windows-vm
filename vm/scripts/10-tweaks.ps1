@@ -1,5 +1,4 @@
-# Windows Tweaks / optimizations
-#
+# Windows VM Tweaks / optimizations
 
 # Unrestricted execution
 Set-ExecutionPolicy Unrestricted -Force
@@ -10,6 +9,7 @@ Set-PSRepository -Name PSGallery -InstallationPolicy Trusted
 Install-Module -Name 'WindowsBox.Compact'
 
 # Add the fix-network.ps1 script to Startup
+# (for when the virtualized net adapter changes)
 $action = New-ScheduledTaskAction -Execute 'Powershell.exe' `
   -Argument '-ExecutionPolicy Bypass -WindowStyle Hidden C:\Windows\vmfiles\fix-network.ps1'
 $trigger = New-ScheduledTaskTrigger -AtLogOn
