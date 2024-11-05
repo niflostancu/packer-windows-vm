@@ -3,7 +3,7 @@
 $ErrorActionPreference = "Stop"
 
 Write-Output 'Installing the virtio drivers...'
-$qemuDriversPath = "E:\"
+$qemuDriversPath = "F:\"
 $vos = "w10"
 
 # first, extract and trust the certificates

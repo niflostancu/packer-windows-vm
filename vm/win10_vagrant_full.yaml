@@ -6,8 +6,7 @@ variables:
   vm_name: "{{ env `VM_NAME` }}"
   arch: "amd64"
   iso_url: "{{ env `SOURCE_IMAGE` }}"
-  iso_checksum_type: "none"
-  iso_checksum: ""
+  iso_checksum: "none"
   disk_size: "20000"
   memory: "3072"
   cpus: "2"
@@ -25,7 +24,6 @@ builders:
   - type: "qemu"
     vm_name: "{{ user `vm_name` }}.qcow2"
     iso_url: "{{ user `iso_url` }}"
-    iso_checksum_type: "{{ user `iso_checksum_type` }}"
     iso_checksum: "{{ user `iso_checksum` }}"
     output_directory: "{{ user `output_directory` }}"
 

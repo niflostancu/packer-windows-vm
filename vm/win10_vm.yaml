@@ -6,8 +6,7 @@ variables:
   vm_name: "{{ env `VM_NAME` }}"
   arch: "amd64"
   iso_url: "{{ env `SOURCE_IMAGE` }}"
-  iso_checksum_type: "none"
-  iso_checksum: ""
+  iso_checksum: "none"
   disk_size: "20000"
   memory: "3072"
   cpus: "2"
@@ -26,7 +25,6 @@ builders:
   - type: "qemu"
     vm_name: "{{ user `vm_name` }}.qcow2"
     iso_url: "{{ user `iso_url` }}"
-    iso_checksum_type: "{{ user `iso_checksum_type` }}"
     iso_checksum: "{{ user `iso_checksum` }}"
     output_directory: "{{ user `output_directory` }}"
 
@@ -44,8 +42,12 @@ builders:
     disk_detect_zeroes: unmap
     skip_compaction: true  # not required anymore
     qemuargs:
+      - ["-vga", "none"]
+      - ["-device", "qxl-vga,vgamem_mb=32"]
+      - ["-usb"]
+      - ["-device", "usb-tablet"]
       - ["-drive", "file={{ user `virtio_win_iso` }},media=cdrom,index=3"]
-      - ["-drive", "file={{ user `output_directory` }}/{{ .Name }},if=virtio,cache=writeback,discard=unmap,format=qcow2,index=1"]
+      - ["-drive", "file={{ user `output_directory` }}/{{ .Name }},if=virtio,cache=writeback,discard=unmap,format=qcow2,detect-zeroes=unmap"]
 
     http_directory: "{{ user `http_directory` }}"
 
