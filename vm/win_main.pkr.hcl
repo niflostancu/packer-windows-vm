@@ -68,16 +68,18 @@ source "qemu" "win" {
     ["-vga", "none"],
     ["-device", "qxl-vga,vgamem_mb=32"],
     ["-usb"], ["-device", "usb-tablet"],
+    ["-netdev", "user,hostfwd=tcp::{{ .SSHHostPort }}-:5985,hostfwd=tcp::${var.qemu_ssh_forward}-:22,id=forward"],
+    ["-device", "virtio-net,netdev=forward,id=net0"],
     ["-drive", "file=${var.virtio_win_iso},media=cdrom,index=3"],
     ["-drive", "file=${var.output_directory}/{{ .Name }},if=virtio,cache=writeback,discard=unmap,format=qcow2,detect-zeroes=${local.disk_discard}"],
   ]
 
   http_directory = var.http_directory
 
-  communicator = "winrm"
+  communicator   = "winrm"
   winrm_username = var.winrm_username
   winrm_password = var.winrm_password
-  winrm_timeout = var.winrm_timeout
+  winrm_timeout  = var.winrm_timeout
 
   shutdown_command = local.shutdown_command
   shutdown_timeout = "60m"
