@@ -35,7 +35,8 @@ locals {
   ]
   provision_scripts = concat(
     ["./scripts/tweaks.ps1"],
-    (var.vm_no_upgrade == 1 ? [] : ["./scripts/update.ps1"])
+    (var.vm_no_upgrade == 1 ? [] : ["./scripts/update.ps1"]),
+    ["./scripts/updates-disable.ps1"]
   )
   shutdown_command = "shutdown /s /t 0 /f"
   execute_command = "powershell -ExecutionPolicy Bypass -Command \"{{.Path}}\""

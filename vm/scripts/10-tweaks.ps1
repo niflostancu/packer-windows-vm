@@ -6,7 +6,7 @@ Get-ExecutionPolicy -List
 
 # Install some powershell goodies
 Set-PSRepository -Name PSGallery -InstallationPolicy Trusted
-Install-Module -Name 'WindowsBox.Compact'
+Install-Module -Name 'WindowsBox.Compact' -Repository PSGallery -Force
 
 # Add the fix-network.ps1 script to Startup
 # (for when the virtualized net adapter changes)
