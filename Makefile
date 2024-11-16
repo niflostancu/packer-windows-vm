@@ -10,14 +10,17 @@ INIT_GOAL = main
 
 # custom variables
 NOINSTALL ?=
+NO_UPGRADE ?= 1
 PACKER_ARGS_EXTRA = $(call _packer_var,vm_no_upgrade,$(NO_UPGRADE))
 PACKER_ARGS_EXTRA +=$(call _packer_var,virtio_win_iso,$(VIRTIO_INSTALL_ISO))
 SUDO ?= sudo
 
-win-ver = 10_LTSC
+win-ver = 10
 basevm-name = Win_$(win-ver)_base
 basevm-packer-src = ./base
 basevm-src-image = $(WIN10_INSTALL_ISO)
+basevm-packer-args +=$(call _packer_var,install_from_idx,$(WIN10_INSTALL_FROM_IDX))
+basevm-packer-args +=$(call _packer_var,product_key,$(WIN10_PRODUCT_KEY))
 
 # VM with RL lab customizations
 main-name = Win_$(win-ver)_main

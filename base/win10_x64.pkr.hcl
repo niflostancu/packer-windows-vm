@@ -15,7 +15,7 @@ variables {
   virtio_win_iso = "<external>"
   qemu_unmap = true
   qemu_ssh_forward = 20022
-  disk_size = "20972"
+  disk_size = "30720"
   memory = "4096"
   cpus = "4"
   source_image = "<external>"
@@ -26,6 +26,10 @@ variables {
   winrm_password = "vagrant"
   winrm_timeout = "6h"
   http_directory = "http"
+
+  install_from_idx = ""
+  product_key = ""
+
 }
 
 locals {
@@ -72,9 +76,14 @@ source "qemu" "win" {
   ]
 
   floppy_files = [
-    "./amd64/Autounattend.xml",
     "./scripts/winrm.ps1"
   ]
+  floppy_content = {
+    "Autounattend.xml" = templatefile("./unattend/win10x64.tmpl.xml", {
+      installFromIndex = var.install_from_idx,
+      productKey = var.product_key
+    })
+  }
   http_directory = var.http_directory
 
   communicator = "winrm"
