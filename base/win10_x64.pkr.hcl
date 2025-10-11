@@ -103,7 +103,7 @@ build {
 
     elevated_user = var.winrm_username
     elevated_password = var.winrm_password
-    valid_exit_codes = [0, 259]
+    valid_exit_codes = [0, 259, 1056]
   }
 
   provisioner "windows-restart" {
