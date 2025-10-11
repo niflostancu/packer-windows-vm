@@ -5,8 +5,8 @@ FRAMEWORK_DIR ?= ./framework
 include $(FRAMEWORK_DIR)/framework.mk
 
 # set default goals
-DEFAULT_GOAL = main
-INIT_GOAL = main
+DEFAULT_GOAL = fullvm
+INIT_GOAL = fullvm
 
 # custom variables
 NO_UPGRADE ?= 0
@@ -15,26 +15,26 @@ PACKER_ARGS_EXTRA +=$(call _packer_var,virtio_win_iso,$(VIRTIO_INSTALL_ISO))
 SUDO ?= sudo
 
 win-ver = 10
-basevm-name = Win_$(win-ver)_base
-basevm-packer-src = ./base
-basevm-src-image = $(WIN10_INSTALL_ISO)
-basevm-packer-args +=$(call _packer_var,install_from_idx,$(WIN10_INSTALL_FROM_IDX))
-basevm-packer-args +=$(call _packer_var,product_key,$(WIN10_PRODUCT_KEY))
+base-name = Win_$(win-ver)_base
+base-packer-src = ./base
+base-src-image = $(WIN10_INSTALL_ISO)
+base-packer-args +=$(call _packer_var,install_from_idx,$(WIN10_INSTALL_FROM_IDX))
+base-packer-args +=$(call _packer_var,product_key,$(WIN10_PRODUCT_KEY))
 
 # VM with RL lab customizations
-main-name = Win_$(win-ver)_main
-main-packer-src = ./vm
-main-src-from = basevm
+fullvm-name = Win_$(win-ver)_main
+fullvm-packer-src = ./vm
+fullvm-src-from = base
 
-define main-extra-rules=
+define fullvm-extra-rules=
 .PHONY: cloud
 cloud:
-	qemu-img convert -O qcow2 "$$(main-dest-image)" "$$(main-dest-image).compact.qcow2"
-	ls -lh "$$(main-dest-image)*"
+	qemu-img convert -O qcow2 "$$(fullvm-dest-image)" "$$(fullvm-dest-image).compact.qcow2"
+	ls -lh "$$(fullvm-dest-image)*"
 endef
 
 # list with all VMs to generate rules for (note: use dependency ordering!)
-build-vms += basevm main
+build-vms += base fullvm
 
 $(call eval_common_rules)
 $(call eval_all_vm_rules)
