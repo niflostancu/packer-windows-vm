@@ -10,7 +10,7 @@ INIT_GOAL = main
 
 # custom variables
 NOINSTALL ?=
-NO_UPGRADE ?= 1
+NO_UPGRADE ?= 0
 PACKER_ARGS_EXTRA = $(call _packer_var,vm_no_upgrade,$(NO_UPGRADE))
 PACKER_ARGS_EXTRA +=$(call _packer_var,virtio_win_iso,$(VIRTIO_INSTALL_ISO))
 SUDO ?= sudo
@@ -31,7 +31,7 @@ define main-extra-rules=
 .PHONY: cloud
 cloud:
 	qemu-img convert -O qcow2 "$$(main-dest-image)" "$$(main-dest-image).compact.qcow2"
-	ls -lh "$$(main-dest-image)"
+	ls -lh "$$(main-dest-image)*"
 endef
 
 # list with all VMs to generate rules for (note: use dependency ordering!)
