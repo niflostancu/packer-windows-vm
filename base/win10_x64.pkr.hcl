@@ -29,7 +29,7 @@ variables {
 
   install_from_idx = ""
   product_key = ""
-
+  install_language = "en-US"
 }
 
 locals {
@@ -82,6 +82,7 @@ source "qemu" "win" {
     "Autounattend.xml" = templatefile("./unattend/win10x64.tmpl.xml", {
       installFromIndex = var.install_from_idx,
       productKey = var.product_key
+      installLanguage = var.install_language
     })
   }
   http_directory = var.http_directory

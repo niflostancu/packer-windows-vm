@@ -20,6 +20,7 @@ base-packer-src = ./base
 base-src-image = $(WIN10_INSTALL_ISO)
 base-packer-args +=$(call _packer_var,install_from_idx,$(WIN10_INSTALL_FROM_IDX))
 base-packer-args +=$(call _packer_var,product_key,$(WIN10_PRODUCT_KEY))
+base-packer-args +=$(call _packer_var,install_language,$(WIN_INSTALL_LANGUAGE))
 
 # VM with RL lab customizations
 fullvm-name = Win_$(win-ver)_main
