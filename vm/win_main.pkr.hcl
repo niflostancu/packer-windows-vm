@@ -13,6 +13,8 @@ variables {
   vm_debug = 0
   vm_no_upgrade = 0
   virtio_win_iso = "<external>"
+  vm_user = "developer"
+  vm_password = "developer"
   qemu_unmap = true
   qemu_ssh_forward = 20022
   disk_size = "30720"
@@ -22,8 +24,6 @@ variables {
   source_checksum = "none"
   use_backing_file = true
   output_directory = "/tmp/packer-out"
-  winrm_username = "vagrant"
-  winrm_password = "vagrant"
   winrm_timeout = "6h"
   http_directory = "http"
 }
@@ -77,8 +77,8 @@ source "qemu" "win" {
   http_directory = var.http_directory
 
   communicator   = "winrm"
-  winrm_username = var.winrm_username
-  winrm_password = var.winrm_password
+  winrm_username = var.vm_user
+  winrm_password = var.vm_password
   winrm_timeout  = var.winrm_timeout
 
   shutdown_command = local.shutdown_command
@@ -98,8 +98,8 @@ build {
       "./scripts/10-tweaks.ps1",
       "./scripts/15-virt-drivers.ps1",
     ]
-    elevated_user = var.winrm_username
-    elevated_password = var.winrm_password
+    elevated_user = var.vm_user
+    elevated_password = var.vm_password
     execute_command = local.execute_command
     valid_exit_codes = [0, 259]
   }
@@ -116,8 +116,8 @@ build {
       "./scripts/90-cleanup.ps1",
       # "./scripts/sysprep.ps1"
     ]
-    elevated_user = var.winrm_username
-    elevated_password = var.winrm_password
+    elevated_user = var.vm_user
+    elevated_password = var.vm_password
     execute_command = local.execute_command
   }
 

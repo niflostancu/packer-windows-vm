@@ -59,7 +59,7 @@
         </OSImage>
       </ImageInstall>
       <DynamicUpdate>
-        <Enable>true</Enable>
+        <Enable>false</Enable>
         <WillShowUI>Never</WillShowUI>
       </DynamicUpdate>
       <UpgradeData>
@@ -68,8 +68,6 @@
       </UpgradeData>
       <UserData>
         <AcceptEula>true</AcceptEula>
-        <FullName>Vagrant</FullName>
-        <Organization>WinVM</Organization>
         %{ if productKey != "" ~}
         <ProductKey>
           <Key>${productKey}</Key>
@@ -274,10 +272,10 @@
       <UserAccounts>
         <LocalAccounts>
           <LocalAccount wcm:action="add">
-            <Name>vagrant</Name>
+            <Name>${winUser}</Name>
             <Group>Administrators</Group>
             <Password>
-              <Value>vagrant</Value>
+              <Value>${winPassword}</Value>
               <PlainText>true</PlainText>
             </Password>
           </LocalAccount>
@@ -288,11 +286,11 @@
         </AdministratorPassword>
       </UserAccounts>
       <AutoLogon>
-        <Username>vagrant</Username>
+        <Username>${winUser}</Username>
         <Enabled>true</Enabled>
         <LogonCount>65432</LogonCount>
         <Password>
-          <Value>vagrant</Value>
+          <Value>${winPassword}</Value>
           <PlainText>true</PlainText>
         </Password>
       </AutoLogon>
@@ -312,8 +310,8 @@
         <SkipUserOOBE>true</SkipUserOOBE>
         <SkipMachineOOBE>true</SkipMachineOOBE>
       </OOBE>
-      <RegisteredOrganization>Windows VM</RegisteredOrganization>
-      <RegisteredOwner>Windows VM</RegisteredOwner>
+      <RegisteredOrganization>OSS</RegisteredOrganization>
+      <RegisteredOwner>LinuxUser</RegisteredOwner>
       <FirstLogonCommands>
         <SynchronousCommand wcm:action="add">
           <Order>1</Order>
@@ -332,7 +330,7 @@
         </SynchronousCommand>
         <SynchronousCommand wcm:action="add">
           <Order>4</Order>
-          <CommandLine>cmd /C wmic useraccount where name="vagrant" set PasswordExpires=false</CommandLine>
+          <CommandLine>cmd /C wmic useraccount where name="${winUser}" set PasswordExpires=false</CommandLine>
           <Description>Password Never Expires</Description>
         </SynchronousCommand>
         <SynchronousCommand wcm:action="add">
