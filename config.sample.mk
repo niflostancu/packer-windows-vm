@@ -14,9 +14,9 @@ VIRTIO_INSTALL_ISO = $(lastword $(wildcard $(HOME)/Downloads/virtio-win-*.iso))
 WIN10_INSTALL_FROM_IDX = 
 # Product Key, take it from:
 # https://learn.microsoft.com/en-us/windows-server/get-started/kms-client-activation-keys
-WIN10_PRODUCT_KEY = NPPR9-FWDCX-D2C8J-H872K-2YT43
+#WIN10_PRODUCT_KEY = NPPR9-FWDCX-D2C8J-H872K-2YT43
 # installer language (note: use en-GB for English International)
-WIN_INSTALL_LANGUAGE = "en-GB"
+#WIN_INSTALL_LANGUAGE = en-GB
 
 # Prevent running Windows Update (on the full vm layer)
 #NO_UPGRADE = 1

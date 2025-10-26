@@ -8,10 +8,13 @@ include $(FRAMEWORK_DIR)/framework.mk
 DEFAULT_GOAL = fullvm
 INIT_GOAL = fullvm
 
+VM_USER = developer
+VM_PASSWORD = developer
+
 # custom variables
-VM_USER ?= developer
-VM_PASSWORD ?= developer
 NO_UPGRADE ?= 0
+WIN10_INSTALL_FROM_IDX ?= 
+WIN_INSTALL_LANGUAGE ?= $(strip $(if $(findstring EnglishInternational,$(WIN10_INSTALL_ISO)),en-GB,en-US))
 PACKER_ARGS_EXTRA =  $(call _packer_var,vm_no_upgrade,$(NO_UPGRADE))
 PACKER_ARGS_EXTRA += $(call _packer_var,virtio_win_iso,$(VIRTIO_INSTALL_ISO))
 PACKER_ARGS_EXTRA += $(call _packer_var,vm_user,$(VM_USER))
