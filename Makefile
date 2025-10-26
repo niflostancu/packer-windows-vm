@@ -4,6 +4,11 @@
 FRAMEWORK_DIR ?= ./framework
 include $(FRAMEWORK_DIR)/framework.mk
 
+# load modules
+include $(FRAMEWORK_DIR)/lib/arch.mk
+include $(FRAMEWORK_DIR)/lib/gen_vm_combo.mk
+include $(FRAMEWORK_DIR)/lib/zerofree.mk
+
 # set default goals
 DEFAULT_GOAL = fullvm
 INIT_GOAL = fullvm
@@ -17,12 +22,11 @@ WIN10_INSTALL_FROM_IDX ?=
 WIN_INSTALL_LANGUAGE ?= $(strip $(if $(findstring EnglishInternational,$(WIN10_INSTALL_ISO)),en-GB,en-US))
 PACKER_ARGS_EXTRA =  $(call _packer_var,vm_no_upgrade,$(NO_UPGRADE))
 PACKER_ARGS_EXTRA += $(call _packer_var,virtio_win_iso,$(VIRTIO_INSTALL_ISO))
-PACKER_ARGS_EXTRA += $(call _packer_var,vm_user,$(VM_USER))
-PACKER_ARGS_EXTRA += $(call _packer_var,vm_password,$(VM_PASSWORD))
 SUDO ?= sudo
 
-win-ver = 10
-base-name = Win_$(win-ver)_base
+WIN_VERSION ?= 10
+winverstr = $(WIN_VERSION)$(if $(ARCH_USE_EFI),_EFI)
+base-name = Win_$(winverstr)_base
 base-packer-src = ./base
 base-src-image = $(WIN10_INSTALL_ISO)
 base-packer-args +=$(call _packer_var,install_from_idx,$(WIN10_INSTALL_FROM_IDX))
@@ -30,7 +34,7 @@ base-packer-args +=$(call _packer_var,product_key,$(WIN10_PRODUCT_KEY))
 base-packer-args +=$(call _packer_var,install_language,$(WIN_INSTALL_LANGUAGE))
 
 # VM with RL lab customizations
-fullvm-name = Win_$(win-ver)_main
+fullvm-name = Win_$(winverstr)_main
 fullvm-packer-src = ./vm
 fullvm-src-from = base
 
