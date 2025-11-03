@@ -33,6 +33,14 @@ base-packer-args +=$(call _packer_var,install_from_idx,$(WIN10_INSTALL_FROM_IDX)
 base-packer-args +=$(call _packer_var,product_key,$(WIN10_PRODUCT_KEY))
 base-packer-args +=$(call _packer_var,install_language,$(WIN_INSTALL_LANGUAGE))
 
+define vhdx_convert_rule=
+.PHONY: $(vm)_vhdx
+$(vm)_vhdx:
+	qemu-img convert -f qcow2 -O vhdx "$$($(vm)-dest-image)" "$$($(vm)-dest-image:%.qcow2=%.vhdx)"
+
+endef
+base-extra-rules += $(vhdx_convert_rule)
+
 # VM with RL lab customizations
 fullvm-name = Win_$(winverstr)_main
 fullvm-packer-src = ./vm
@@ -44,6 +52,7 @@ cloud:
 	qemu-img convert -O qcow2 "$$(fullvm-dest-image)" "$$(fullvm-dest-image).compact.qcow2"
 	ls -lh "$$(fullvm-dest-image)*"
 endef
+fullvm-extra-rules += $(vhdx_convert_rule)
 
 # list with all VMs to generate rules for (note: use dependency ordering!)
 build-vms += base fullvm
