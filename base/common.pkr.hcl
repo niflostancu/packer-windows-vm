@@ -8,7 +8,6 @@ packer {
 }
 
 variables {
-  vm_name = "win_base"
   vm_locale = "en_US"
   vm_timezone = "Europe/Bucharest"
   vm_pause = 0
@@ -19,7 +18,6 @@ variables {
   disk_size = 30720
   memory = "4096"
   cpus = "4"
-  use_backing_file = false
   output_directory = "/tmp/packer-out"
   boot_wait = "2s"
   ssh_username = "TODO"

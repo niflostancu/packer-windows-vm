@@ -1,10 +1,12 @@
 variables {
+  vm_name = "win_base"
   vm_no_upgrade = 0
   virtio_win_iso = "<external>"
   source_image = "<external>"
   source_checksum = "none"
   winrm_timeout = "6h"
   http_directory = "http"
+  use_backing_file = false
 
   install_from_idx = ""
   product_key = ""

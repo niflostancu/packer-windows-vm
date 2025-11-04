@@ -1,31 +1,11 @@
-packer {
-  required_plugins {
-    qemu = {
-      version = ">= 1.0.10"
-      source  = "github.com/hashicorp/qemu"
-    }
-  }
-}
-
 variables {
   vm_name = "win10"
-  vm_pause = 0
-  vm_debug = 0
   vm_no_upgrade = 0
   virtio_win_iso = "<external>"
-  vm_user = "developer"
-  vm_password = "developer"
-  qemu_unmap = true
-  qemu_ssh_forward = 20022
-  disk_size = "30720"
-  memory = "4096"
-  cpus = "4"
   source_image = "<external>"
   source_checksum = "none"
-  use_backing_file = true
-  output_directory = "/tmp/packer-out"
   winrm_timeout = "6h"
-  http_directory = "http"
+  use_backing_file = true
 }
 
 locals {
@@ -39,6 +19,13 @@ locals {
   )
   shutdown_command = "shutdown /s /t 0 /f"
   execute_command = "powershell -ExecutionPolicy Bypass -Command \"{{.Path}}\""
+  win_full_qemuargs = [
+    ["-vga", "none"],
+    ["-device", "qxl-vga,vgamem_mb=256"],
+    ["-usb"], ["-device", "usb-tablet"],
+    ["-drive", "file=${var.virtio_win_iso},media=cdrom,index=3"],
+    ["-drive", "file=${var.output_directory}/{{ .Name }},if=virtio,cache=writeback,discard=unmap,format=qcow2,detect-zeroes=${local.disk_discard}"],
+  ]
 }
 
 source "qemu" "win" {
@@ -46,6 +33,12 @@ source "qemu" "win" {
   vm_name       = var.vm_name
   headless      = false
 
+  // Arch-specific qemu config
+  qemu_binary  = local.qemu_arch_binary
+  machine_type = local.qemu_arch_machine_type
+  firmware     = local.qemu_arch_firmware
+  accelerator  = local.qemu_arch_accelerator
+  qemuargs     = concat(local.win_full_qemuargs, local.qemu_arch_qemuargs)
   // Virtual Hardware Specs
   memory         = var.memory
   cpus           = var.cpus
@@ -63,22 +56,10 @@ source "qemu" "win" {
   disk_image        = var.use_backing_file
   use_backing_file  = var.use_backing_file
   output_directory  = var.output_directory
-  // override qemu args for to mount all drives
-  qemuargs = [
-    ["-vga", "none"],
-    ["-device", "qxl-vga,vgamem_mb=32"],
-    ["-usb"], ["-device", "usb-tablet"],
-    ["-netdev", "user,hostfwd=tcp::{{ .SSHHostPort }}-:5985,hostfwd=tcp::${var.qemu_ssh_forward}-:22,id=forward"],
-    ["-device", "virtio-net,netdev=forward,id=net0"],
-    ["-drive", "file=${var.virtio_win_iso},media=cdrom,index=3"],
-    ["-drive", "file=${var.output_directory}/{{ .Name }},if=virtio,cache=writeback,discard=unmap,format=qcow2,detect-zeroes=${local.disk_discard}"],
-  ]
-
-  http_directory = var.http_directory
 
   communicator   = "winrm"
-  winrm_username = var.vm_user
-  winrm_password = var.vm_password
+  winrm_username = var.ssh_username
+  winrm_password = var.ssh_password
   winrm_timeout  = var.winrm_timeout
 
   shutdown_command = local.shutdown_command
@@ -98,8 +79,8 @@ build {
       "./scripts/10-tweaks.ps1",
       "./scripts/15-virt-drivers.ps1",
     ]
-    elevated_user = var.vm_user
-    elevated_password = var.vm_password
+    elevated_user = var.ssh_username
+    elevated_password = var.ssh_password
     execute_command = local.execute_command
     valid_exit_codes = [0, 259]
   }
@@ -116,8 +97,8 @@ build {
       "./scripts/90-cleanup.ps1",
       # "./scripts/sysprep.ps1"
     ]
-    elevated_user = var.vm_user
-    elevated_password = var.vm_password
+    elevated_user = var.ssh_username
+    elevated_password = var.ssh_password
     execute_command = local.execute_command
   }
 
