@@ -16,21 +16,22 @@ $msys2Args = @("-defterm", "-no-start", "-msys2", "-c", "`"$@`"", "--")
 & $msys2 $msys2Args pacman -S --noconfirm --needed `
 	git openssh cygrunsrv mingw-w64-x86_64-editrights rsync
 
-# add mounts for user home and /vagrant (used by the default rsync)
-New-Item -ItemType directory -Force -Path "$msysRoot\vagrant" | out-null
-New-Item -ItemType directory -Force -Path "C:\users\vagrant\sync" | out-null
+# add mounts for user home and /share (used by the default rsync)
+$localUser = [Environment]::Username
+New-Item -ItemType directory -Force -Path "$msysRoot\share" | out-null
+New-Item -ItemType directory -Force -Path "C:\users\$localUser\sync" | out-null
 
 $fstab = (Get-Content -Path "$msysRoot\etc\fstab")
-If (!($fstab -like "*/vagrant*")) {
-	$fstab += "`nc:/Users/Vagrant /home/vagrant/ ntfs binary,posix=0,exec,user 0 0`n"
-	$fstab += "c:/Users/Vagrant/sync /vagrant ntfs binary,posix=0,exec,user 0 0`n"
+If (!($fstab -like "*/share*")) {
+	$fstab += "`nc:/Users/$localUser /home/$localUser/ ntfs binary,posix=0,exec,user 0 0`n"
+	$fstab += "c:/Users/$localUser/sync /share ntfs binary,posix=0,exec,user 0 0`n"
 	Set-Content -Path "$msysRoot\etc\fstab" -Value $fstab | out-null
 }
 
-## Install vagrant ssh keys
-New-Item -ItemType Directory -Force -Path "C:\\Users\\vagrant\\.ssh" | out-null
+## Install Vagrant ssh keys (FIXME: add option for custom authorized keys)
+New-Item -ItemType Directory -Force -Path "C:\\Users\\$localUser\\.ssh" | out-null
 Invoke-WebRequest -Uri "https://raw.github.com/hashicorp/vagrant/master/keys/vagrant.pub" `
-	-Outfile "C:\\Users\\vagrant\\.ssh\\authorized_keys"
+	-Outfile "C:\\Users\\$localUser\\.ssh\\authorized_keys"
 
 # Configure msys2 openssh to run as service
 & $msys2 "C:\Windows\vmfiles\msys-sshd.sh"
