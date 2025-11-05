@@ -75,7 +75,7 @@ build {
   sources = ["sources.qemu.win"]
 
   provisioner "file" {
-    source = "./scripts/machine/"
+    source = "./scripts/files/"
     destination = "C:/Windows/vmfiles"
   }
 
