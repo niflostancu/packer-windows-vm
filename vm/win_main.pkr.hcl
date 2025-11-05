@@ -25,6 +25,11 @@ locals {
     ["-usb"], ["-device", "usb-tablet"],
     ["-drive", "file=${var.virtio_win_iso},media=cdrom,index=3"],
     ["-drive", "file=${var.output_directory}/{{ .Name }},if=virtio,cache=writeback,discard=unmap,format=qcow2,detect-zeroes=${local.disk_discard}"],
+    ["-spice", "port=5930,disable-ticketing=on"],
+    ["-device", "virtio-serial"],
+    ["-chardev", "spicevmc,id=vdagent,name=vdagent"],
+    ["-device", "virtserialport,chardev=vdagent,name=com.redhat.spice.0"],
+    ["-display", "spice-app"]
   ]
 }
 
