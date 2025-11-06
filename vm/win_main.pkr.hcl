@@ -1,6 +1,7 @@
 variables {
   vm_name = "win10"
   vm_no_upgrade = 0
+  vm_no_provision = 0
   virtio_win_iso = "<external>"
   source_image = "<external>"
   source_checksum = "none"
@@ -13,15 +14,11 @@ locals {
   envs = [
     "VM_DEBUG=${var.vm_debug}",
   ]
-  provision_scripts = concat(
-    ["./scripts/tweaks.ps1"],
-    (var.vm_no_upgrade == 1 ? [] : ["./scripts/update.ps1"])
-  )
   shutdown_command = "shutdown /s /t 0 /f"
   execute_command = "powershell -ExecutionPolicy Bypass -Command \"{{.Path}}\""
   win_full_qemuargs = [
     ["-vga", "none"],
-    ["-device", "qxl-vga,vgamem_mb=256"],
+    ["-device", "qxl-vga,vgamem_mb=256,ram_size_mb=256,vram_size_mb=256"],
     ["-usb"], ["-device", "usb-tablet"],
     ["-drive", "file=${var.virtio_win_iso},media=cdrom,index=3"],
     ["-drive", "file=${var.output_directory}/{{ .Name }},if=virtio,cache=writeback,discard=unmap,format=qcow2,detect-zeroes=${local.disk_discard}"],
@@ -80,10 +77,10 @@ build {
   }
 
   provisioner "powershell" {
-    scripts = [
+    scripts = (var.vm_no_provision >= 1 ? ["./scripts/_dummy.ps1"] : [
       "./scripts/10-tweaks.ps1",
       "./scripts/15-virt-drivers.ps1",
-    ]
+    ])
     elevated_user = var.ssh_username
     elevated_password = var.ssh_password
     execute_command = local.execute_command
@@ -92,19 +89,23 @@ build {
 
   provisioner "windows-restart" {
     restart_timeout = "60m"
+    restart_command = (var.vm_no_provision >= 1 ? 
+      "powershell -command \"& {Write-Output 'mock restart.'}\"" : 
+      "shutdown /r /f /t 0 /c \"packer restart\"")
+    # check_registry = true
   }
 
-  # continue with the scripts
   provisioner "powershell" {
-    scripts = [
+    scripts = (var.vm_no_provision > 1 ? ["./scripts/_dummy.ps1"] : [
       "./scripts/30-chocolatey.ps1",
       "./scripts/35-msys.ps1",
       "./scripts/90-cleanup.ps1",
-      # "./scripts/sysprep.ps1"
-    ]
+      // "./scripts/90-sysprep.ps1"
+    ])
     elevated_user = var.ssh_username
     elevated_password = var.ssh_password
     execute_command = local.execute_command
+    valid_exit_codes = [0, 259]
   }
 
   provisioner "breakpoint" {

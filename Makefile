@@ -18,6 +18,7 @@ VM_PASSWORD = developer
 
 # custom variables
 NO_UPGRADE ?= 0
+NO_PROVISION ?= 0
 WIN10_INSTALL_FROM_IDX ?= 
 WIN_INSTALL_LANGUAGE ?= $(strip $(if $(findstring EnglishInternational,$(WIN10_INSTALL_ISO)),en-GB,en-US))
 PACKER_ARGS_EXTRA =  $(call _packer_var,vm_no_upgrade,$(NO_UPGRADE))
@@ -45,6 +46,7 @@ base-extra-rules += $(vhdx_convert_rule)
 fullvm-name = Win_$(winverstr)_main
 fullvm-packer-src = ./vm
 fullvm-src-from = base
+fullvm-packer-args += $(call _packer_var,vm_no_provision,$(NO_PROVISION))
 
 define fullvm-extra-rules=
 .PHONY: cloud
