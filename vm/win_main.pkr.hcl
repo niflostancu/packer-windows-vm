@@ -76,7 +76,7 @@ build {
 
   provisioner "file" {
     source = "./scripts/files/"
-    destination = "C:/Windows/vmfiles"
+    destination = "C:/Windows/vmfiles/"
   }
 
   provisioner "powershell" {
