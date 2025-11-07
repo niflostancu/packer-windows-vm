@@ -47,7 +47,8 @@ Remove-Item -Force -ErrorAction SilentlyContinue "$env:userprofile\AppData\Roami
 Write-Output "Removing scheduled task"
 Get-ScheduledTask -TaskPath '\' -TaskName 'OneDrive*' -ea SilentlyContinue | Unregister-ScheduledTask -Confirm:$false
 
-Start-Sleep 1
+Unregister-ScheduledTask -TaskName 'Restart_Explorer' -Confirm:$false -ErrorAction 'silentlycontinue'
+Start-Sleep 2
 
 Write-Output "Restarting explorer"
 $Params = @{
