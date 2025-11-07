@@ -1,8 +1,9 @@
 # Windows VM Tweaks / optimizations
 
 # Unrestricted execution
-Set-ExecutionPolicy Unrestricted -Force
-Get-ExecutionPolicy -List
+Set-ExecutionPolicy Unrestricted -Scope Process -Force
+Set-ExecutionPolicy Unrestricted -Scope LocalMachine -Force
+# Get-ExecutionPolicy -List
 
 # Install some powershell goodies
 Set-PSRepository -Name PSGallery -InstallationPolicy Trusted
@@ -14,7 +15,8 @@ $action = New-ScheduledTaskAction -Execute 'Powershell.exe' `
   -Argument '-ExecutionPolicy Bypass -WindowStyle Hidden C:\Windows\vmfiles\fix-network.ps1'
 $trigger = New-ScheduledTaskTrigger -AtLogOn
 Register-ScheduledTask -Action $action -Trigger $trigger -TaskName "FixNetwork" `
-  -Description "Sets Networks to Private"
+  -Description "Sets Networks to Private" | out-null
+Write-Output "FixNetwork task registered!"
 
 # configure powersaving and screen saver
 powercfg -setactive 8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c # High Performance
@@ -26,7 +28,6 @@ New-Itemproperty -Path "registry::HKCU\Control Panel\Desktop" -Name ScreenSaveAc
 New-Itemproperty -Path "registry::HKCU\Control Panel\Desktop" -Name ScreenSaveTimeOut -Value 0 -PropertyType "DWord" -Force | out-null
 New-Itemproperty -Path "registry::HKU\.DEFAULT\Control Panel\Desktop" -Name ScreenSaveActive -Value 0 -PropertyType "DWord" -Force | out-null
 New-Itemproperty -Path "registry::HKU\.DEFAULT\Control Panel\Desktop" -Name ScreenSaveTimeOut -Value 0 -PropertyType "DWord" -Force | out-null
-
 
 # Disable automatic pagefile management
 $cs = gwmi Win32_ComputerSystem
@@ -73,23 +74,17 @@ foreach ($service in $services) {
 
 # Configure Windows Explorer properties
 Write-Output "Tweaking explorer"
-
 $explorer_key = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer"
 # Show file extensions
 Set-ItemProperty $explorer_key\Advanced\ -name HideFileExt -value 0
-
 # Show hidden files
 Set-ItemProperty $explorer_key\Advanced\ -name Hidden -value 1
-
 # Show Run command in Start Menu
 Set-ItemProperty $explorer_key\Advanced\ -name Start_ShowRun -value 1
-
 # Show Administrative Tools in Start Menu
 Set-ItemProperty $explorer_key\Advanced\ -name StartMenuAdminTools -value 1
-
 # Enable QuickEdit mode
 Set-ItemProperty HKCU:\Console\ -name QuickEdit -value 1
-
 # Show "Computer" desktop icon"
 $key = "$explorer_key\HideDesktopIcons\NewStartPanel"
 New-Item $key -Force | out-null

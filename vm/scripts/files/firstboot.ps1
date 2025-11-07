@@ -1,7 +1,7 @@
 # First boot logging
 
 # Logging
-Start-Transcript -path "C:\Windows\vmfiles\vm-firstboot.log" -Append -force
+Start-Transcript -path "C:\Windows\Temp\vm-firstboot.log" -Append -force
 
 # Make sure user does not expire
 $localUser = [Environment]::Username

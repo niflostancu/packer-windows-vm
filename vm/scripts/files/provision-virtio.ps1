@@ -3,7 +3,6 @@
 
 Start-Transcript -path "C:\Windows\Temp\vm-provision-virtio.log" -Append -force
 
-
 # fist, install all drivers available
 Write-Output 'Installing the virtio drivers...'
 $qemuDriversPath = "F:"
