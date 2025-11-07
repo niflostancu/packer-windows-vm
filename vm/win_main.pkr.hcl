@@ -98,6 +98,7 @@ build {
   provisioner "powershell" {
     scripts = (var.vm_no_provision > 1 ? ["./scripts/_dummy.ps1"] : [
       "./scripts/20-pkg-managers.ps1",
+      "./scripts/32-default-apps.ps1",
       "./scripts/35-msys.ps1",
       "./scripts/66-debloat.ps1",
       "./scripts/90-cleanup.ps1",
