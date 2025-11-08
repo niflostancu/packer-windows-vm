@@ -31,9 +31,9 @@ function Invoke-VMScriptTask {
         $innerScript = "& '$ScriptFile'"
     }
     $genScript = @"
-Start-Transcript -path '$LogFile' -append
+& {
 $innerScript
-Stop-Transcript
+} *>&1 | Tee-Object -FilePath '$logFile' -Append
 "@
     $genScript | Out-File "$genScriptPath" -Encoding utf8 -Force
 
@@ -56,17 +56,26 @@ Stop-Transcript
     }
     Write-Verbose "Scheduled powershell.exe with args: '$psArgs'"
 
+    $tailScript = {
+        Get-Content -Path $input -Wait -Tail 0
+    }
+
     # create an empty log file and launch the task 
-    New-Item $logFile -Force
-    Clear-Content $logFile -Force
+    New-Item $logFile -Force | out-null
+    Clear-Content $logFile -Force | out-null
     $lastResult = 255
+    $tailJob = $null
     try {
-        Register-ScheduledTask @schedTask
+        if ($PipeLog) {
+            $job = Start-Job -ScriptBlock $tailScript -InputObject $logFile
+        }
+        Register-ScheduledTask @schedTask | Write-Verbose
         Start-Sleep -Seconds 1
         if ($Wait) {
             Write-Verbose "Waiting for task to end..."
             $timer = [Diagnostics.Stopwatch]::StartNew()
             while ($timer.Elapsed.TotalSeconds -lt $TaskTimeout) {
+                if ($PipeLog) { $job | Receive-Job }
                 $task = Get-ScheduledTask -TaskName $schedTaskName
                 $state = $task.State
                 if ($task.State -eq 'Ready' -or $task.State -eq 'Disabled') {
@@ -87,6 +96,8 @@ Stop-Transcript
             # delete the task (keep the other files for further inspection)
             Unregister-ScheduledTask -TaskName $schedTaskName -Confirm:$false -ErrorAction SilentlyContinue
         }
+        Start-Sleep 1
+        if ($PipeLog) { $job | Receive-Job }
     }
 }
 
