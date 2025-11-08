@@ -1,0 +1,1 @@
+../snippets.d/disable-msupdate.ps1

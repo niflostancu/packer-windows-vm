@@ -12,9 +12,6 @@ variables {
   vm_timezone = "Europe/Bucharest"
   vm_pause = 0
   vm_debug = 0
-  vm_scripts_dir = "scripts/"
-  qemu_unmap = true
-  qemu_ssh_forward = 20022
   disk_size = 30720
   memory = "4096"
   cpus = "4"

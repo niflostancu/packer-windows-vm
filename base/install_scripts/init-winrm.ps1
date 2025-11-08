@@ -1,0 +1,22 @@
+# Installs & Configures WinRM for Packer VM communication.
+# Will be called from unattended installer's OOBE stage. 
+
+$ErrorActionPreference = "Stop"
+
+# Supress network location Prompt
+New-Item -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Network\NewNetworkWindowOff" -Force
+
+# Set network to private
+Set-NetConnectionProfile -InterfaceIndex (Get-NetConnectionProfile).InterfaceIndex -NetworkCategory Private | out-null
+
+# Set up WinRM and configure some things
+Set-WSManQuickConfig -Force | out-null
+Set-Item WSMan:\localhost\MaxTimeoutms -Value 3600000 | out-null
+Set-Item WSMan:\localhost\Service\AllowUnencrypted -Value True | out-null
+Set-Item WSMan:\localhost\Service\Auth\Basic -Value True | out-null
+
+Set-Service WinRM -StartupType Automatic | out-null
+Restart-Service winrm | out-null
+
+Set-ExecutionPolicy Unrestricted -Force
+

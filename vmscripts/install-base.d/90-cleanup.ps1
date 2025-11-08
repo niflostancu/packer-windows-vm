@@ -1,0 +1,1 @@
+../snippets.d/cleanup.ps1

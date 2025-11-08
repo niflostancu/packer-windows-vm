@@ -7,6 +7,8 @@ variables {
   qemu_machine_type = ""
   qemu_accelerator = ""
   qemu_firmware = ""
+  qemu_vgamem = "256"
+  qemu_unmap = true
 }
 variable "qemu_args" {
   type    = list(list(string))
@@ -21,6 +23,19 @@ locals {
   qemu_arch_accelerator  = lookup(lookup(local.qemu_arch_defs, var.arch, {}), "accelerator", "")
   qemu_arch_qemuargs = concat(var.qemu_args, lookup(lookup(local.qemu_arch_defs, var.arch, {}),
     "extra_args", []))
+  qemu_discard   = (var.qemu_unmap ? "unmap" : "")
+
+  # qemu args for QXL + SPICE integration 
+  spice_qxl_devs_qemuargs = [
+    ["-vga", "none"],
+    ["-device", "qxl-vga,vgamem_mb=${var.qemu_vgamem},ram_size_mb=${var.qemu_vgamem},vram_size_mb=${var.qemu_vgamem}"],
+    ["-usb"], ["-device", "usb-tablet"],
+    ["-spice", "port=5930,disable-ticketing=on"],
+    ["-device", "virtio-serial"],
+    ["-chardev", "spicevmc,id=vdagent,name=vdagent"],
+    ["-device", "virtserialport,chardev=vdagent,name=com.redhat.spice.0"],
+    ["-display", "spice-app"]
+  ]
 
   // definitions
   qemu_arch_defs = {

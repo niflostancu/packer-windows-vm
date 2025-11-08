@@ -1,0 +1,1 @@
+../snippets.d/install-pkgmgr.ps1
