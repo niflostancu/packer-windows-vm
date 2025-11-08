@@ -2,6 +2,8 @@
 #                                                  OneDrive                                                #
 ############################################################################################################
 
+Import-Module "C:\Windows\vmfiles\lib\VMRunner"
+
 Write-Output "Kill OneDrive process"
 taskkill.exe /F /IM "OneDrive.exe"
 taskkill.exe /F /IM "explorer.exe"
@@ -44,26 +46,17 @@ reg unload "hku\Default"
 Write-Output "Removing startmenu entry"
 Remove-Item -Force -ErrorAction SilentlyContinue "$env:userprofile\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\OneDrive.lnk"
 
+
 Write-Output "Removing scheduled task"
 Get-ScheduledTask -TaskPath '\' -TaskName 'OneDrive*' -ea SilentlyContinue | Unregister-ScheduledTask -Confirm:$false
-
-Unregister-ScheduledTask -TaskName 'Restart_Explorer' -Confirm:$false -ErrorAction 'silentlycontinue'
-Start-Sleep 2
-
-Write-Output "Restarting explorer"
-$Params = @{
-  Action = (New-ScheduledTaskAction -Execute 'explorer.exe')
-  Trigger = (New-ScheduledTaskTrigger -Once -At (Get-Date).AddSeconds(1))
-  TaskName = 'Restart_Explorer'
-}
-Register-ScheduledTask @Params
-Write-Output "Waiting for explorer to complete loading"
-Start-Sleep 5
 
 Write-Output "Removing additional OneDrive leftovers"
 foreach ($item in (Get-ChildItem "$env:WinDir\WinSxS\*onedrive*")) {
     Remove-Item -Recurse -Force $item.FullName
 }
+
+Invoke-VMScriptTask -TaskID "debloat_rr_explorer" `
+    -ScriptSnippet 'Start-Process -FilePath "explorer.exe"'
 
 ############################################################################################################
 #                                           Windows CoPilot                                                #
