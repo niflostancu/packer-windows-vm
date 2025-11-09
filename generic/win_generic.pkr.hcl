@@ -117,7 +117,7 @@ build {
   }
 
   provisioner "powershell" {
-    inline = (var.vm_no_provision >= 1 || local._no_run_mid_stage ? ["Write-Output '<stage2 skipped>'"] : [
+    inline = (var.vm_no_provision >= 2 || local._no_run_mid_stage ? ["Write-Output '<stage2 skipped>'"] : [
         "& '${local._vm_runner}' -Path '${var.vm_install_tasks}' -FromIdx ${var.vm_stage2_idx} -UntilIdx ${var.vm_stage3_idx}",
       ])
     elevated_user = var.ssh_username
@@ -126,14 +126,14 @@ build {
   }
   provisioner "windows-restart" {
     restart_timeout = "60m"
-    restart_command = (var.vm_no_provision >= 1 || local._no_run_mid_stage ? 
+    restart_command = (var.vm_no_provision >= 2 || local._no_run_mid_stage ? 
       "powershell -command \"& {Write-Output 'mock restart.'}\"" : 
       "shutdown /r /f /t 0 /c \"packer restart\"")
     # check_registry = true
   }
 
   provisioner "powershell" {
-    inline = (var.vm_no_provision >= 1 ? ["Write-Output '<stage3 skipped>'"] : [
+    inline = (var.vm_no_provision >= 3 ? ["Write-Output '<stage3 skipped>'"] : [
         "& '${local._vm_runner}' -Path '${var.vm_install_tasks}' -FromIdx ${var.vm_stage3_idx}",
       ])
     elevated_user = var.ssh_username
@@ -146,5 +146,3 @@ build {
     note    = "this is a breakpoint"
   }
 }
-
-
