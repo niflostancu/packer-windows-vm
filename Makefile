@@ -59,8 +59,7 @@ endef
 fullvm-extra-rules += $(vhdx_convert_rule)
 
 # list with all VMs to generate rules for (note: use dependency ordering!)
-build-vms += base fullvm
+build-vms = base fullvm
 
-$(call eval_common_rules)
-$(call eval_all_vm_rules)
+$(call vm_eval_all_rules)
 
