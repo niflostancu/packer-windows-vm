@@ -7,6 +7,7 @@ variables {
   vm_install_tasks = "install-generic.d/"
   vm_stage2_idx = 30
   vm_stage3_idx = 30
+  http_directory = ""
 
   source_image = "<external>"
   source_checksum = "none"
@@ -26,6 +27,8 @@ variable "vm_extra_envs" {
 locals {
   win_generic_qemuargs = concat([
       ["-drive", "file=${var.output_directory}/{{ .Name }},if=virtio,cache=writeback,discard=${local.qemu_discard},format=qcow2,detect-zeroes=${local.qemu_discard}"],
+      [ "-netdev", "user,hostfwd=tcp::{{ .SSHHostPort }}-:5985,hostfwd=tcp::20122-:22,id=winnet"],
+      [ "-device", "virtio-net,netdev=winnet,id=net0"]
     ], (var.extra_iso == "" ? [] : [
       ["-drive", "file=${var.extra_iso},media=cdrom,index=3"]
     ])
@@ -77,6 +80,7 @@ source "qemu" "windows" {
   winrm_username = var.ssh_username
   winrm_password = var.ssh_password
   winrm_timeout  = var.winrm_timeout
+  http_directory = var.http_directory
 
   shutdown_command = local.shutdown_command
   shutdown_timeout = "60m"
