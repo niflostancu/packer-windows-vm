@@ -51,4 +51,5 @@ Get-Service spice-agent
 # End logging
 stop-transcript 
 
+Set-Service WinRM -StartupType Automatic
 Restart-Computer -Force

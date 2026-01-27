@@ -3,8 +3,7 @@
 # (this script will return early and stop WinRM, otherwise networking crashes during drivers
 # install and packer errors)
 
-shutdown /r /f /t 600 /c "will reboot after virtio drivers finished"
-
-# Start a background process for installing virtio drivers that will reboot automatically when finished
-Start-Process -FilePath "powershell.exe" -ArgumentList "-NoExit", "$VMSCRIPTS\files\provision-virtio.ps1"
+# $global:DEBUG = $true
+Invoke-VMRebootingTask -TaskID "provision_virtio" `
+    -ScriptSnippet "& `"$VMSCRIPTS\files\provision-virtio.ps1`""
 
