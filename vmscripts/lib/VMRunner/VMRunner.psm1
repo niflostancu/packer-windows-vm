@@ -13,8 +13,8 @@ function Invoke-VMScriptTask {
         [string] $ExtraPSArguments = "",
         [string] $TaskID = "default_script",
         [string] $LogTo = $defaultLogPath,
-        [bool] $Wait = $true,
-        [bool] $PipeLog = $true,
+        [switch] $Wait,
+        [switch] $PipeLog,
         [int] $TaskTimeout = $defaultTaskTimeout
     )
     $schedTaskName = $taskPrefix + "_" + "$TaskID"
