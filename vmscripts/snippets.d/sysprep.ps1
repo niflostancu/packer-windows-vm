@@ -1,9 +1,13 @@
 # Runs sysprep to generalize the machine
 
-Remove-Item -ErrorAction Ignore "C:\Windows\Temp\vm-firstboot.log"
+. "$PSScriptRoot\..\common.ps1"
 
-Start-Process -FilePath 'C:/windows/System32/Sysprep/sysprep.exe' `
-    -ArgumentList '/oobe /generalize /shutdown "/unattend:$VMSCRIPTS\files\sysprep-unattend.xml"'
+Remove-Item -ErrorAction Ignore "$VMSCRIPTS\Logs\vm-firstboot.log"
 
-exit 0
+& "C:/windows/System32/Sysprep/sysprep.exe" /oobe /generalize /quit /unattend:"$VMSCRIPTS\files\sysprep-unattend.xml"
+
+# sysprep goes in background, wait for it to finish...
+while (Get-Process -Name "sysprep" -ErrorAction SilentlyContinue) {
+    Start-Sleep -Seconds 1
+}
 

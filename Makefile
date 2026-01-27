@@ -19,6 +19,8 @@ VM_PASSWORD = developer
 # custom variables
 NO_UPGRADE ?= 0
 NO_PROVISION ?= 0
+DO_SYSPREP ?= 0
+DISK_SIZE ?= 35840
 WIN10_INSTALL_FROM_IDX ?= 
 WIN_INSTALL_LANGUAGE ?= $(strip $(if $(findstring EnglishInternational,$(WIN10_INSTALL_ISO)),en-GB,en-US))
 PACKER_ARGS_EXTRA =  $(call _packer_var,vm_no_upgrade,$(NO_UPGRADE))
@@ -29,11 +31,13 @@ winverstr = $(WIN_VERSION)$(if $(ARCH_USE_EFI),_EFI)
 base-name = Win_$(winverstr)_base
 base-packer-src = ./base
 base-src-image = $(WIN10_INSTALL_ISO)
+base-packer-args += $(call _packer_var,disk_size,$(DISK_SIZE))
 base-packer-args += $(call _packer_var,extra_iso,$(VIRTIO_INSTALL_ISO))
 base-packer-args +=$(call _packer_var,install_from_idx,$(WIN10_INSTALL_FROM_IDX))
 base-packer-args +=$(call _packer_var,product_key,$(WIN10_PRODUCT_KEY))
 base-packer-args +=$(call _packer_var,install_language,$(WIN_INSTALL_LANGUAGE))
 base-packer-args += $(call _packer_var,vm_no_provision,$(NO_PROVISION))
+base-packer-args += $(call _packer_var,vm_do_sysprep,$(DO_SYSPREP))
 
 define vhdx_convert_rule=
 .PHONY: $(vm)_vhdx

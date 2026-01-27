@@ -2,6 +2,7 @@ variables {
   vm_name = "win10"
   vm_no_upgrade = 0
   vm_no_provision = 0
+  vm_do_sysprep = 0
   vm_scripts_dir = "../vmscripts/"
   vm_install_script = "vmscript-exec.ps1"
   vm_install_tasks = "install-generic.d/"
@@ -38,6 +39,7 @@ locals {
     "VM_DEBUG=${var.vm_debug}",
     "VM_NO_UPGRADE=${var.vm_no_upgrade}",
     "VM_NO_PROVISION=${var.vm_no_provision}",
+    "VM_DO_SYSPREP=${var.vm_do_sysprep}",
   ], var.vm_extra_envs)
 
   _no_run_mid_stage = (var.vm_stage2_idx == var.vm_stage3_idx)

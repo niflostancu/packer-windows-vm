@@ -4,6 +4,7 @@ variables {
   vm_name = "win_base"
   vm_no_upgrade = 0
   vm_no_provision = 0
+  vm_do_sysprep = 0
   vm_scripts_dir = "../vmscripts/"
   vm_install_script = "vmscript-exec.ps1"
   vm_install_tasks = "install-base.d/"
@@ -43,6 +44,7 @@ locals {
     "VM_DEBUG=${var.vm_debug}",
     "VM_NO_UPGRADE=${var.vm_no_upgrade}",
     "VM_NO_PROVISION=${var.vm_no_provision}",
+    "VM_DO_SYSPREP=${var.vm_do_sysprep}",
   ], var.vm_extra_envs)
   _vm_runner = "C:\\Windows\\vmscripts\\bin\\${var.vm_install_script}"
   shutdown_command = "shutdown /s /t 0 /f"
