@@ -1,6 +1,6 @@
 $InformationPreference = 'Continue'
 
-$defaultLogPath = "$env:WINDIR\Temp"
+$defaultLogPath = "$VMSCRIPTS\Logs"
 $defaultScriptPath = "$env:WINDIR\Temp"
 $taskPrefix = "_vm_runner_"
 $defaultTaskTimeout = 60

@@ -1,7 +1,7 @@
 # First boot initialization
 
 # Logging
-Start-Transcript -path "C:\Windows\Temp\vm-firstboot.log" -Append -force
+Start-Transcript -path "$VMSCRIPTS\Logs\vm-firstboot.log" -Append -force
 
 # Make sure user does not expire
 $localUser = [Environment]::Username
@@ -11,7 +11,7 @@ Write-Output "Removed expiration for local user $localUser"
 # Fix networking for WinRM
 # Add the fix-network.ps1 script to Startup (for when the virt net adapter changes)
 $action = New-ScheduledTaskAction -Execute 'Powershell.exe' `
-  -Argument '-ExecutionPolicy Bypass -WindowStyle Hidden $VMSCRIPTS\files\vm-fix-network.ps1'
+  -Argument "-ExecutionPolicy Bypass -WindowStyle Hidden `"$VMSCRIPTS\files\vm-fix-network.ps1`""
 $trigger = New-ScheduledTaskTrigger -AtLogOn
 Register-ScheduledTask -Action $action -Trigger $trigger -TaskName "FixNetwork" `
   -Description "Sets Networks to Private" | out-null

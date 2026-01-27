@@ -1,7 +1,7 @@
 # Provisions virtio guest drivers as separate job
 # (since packer's winrm communicator gets stuck in the process, it must be run via a fake reboot command)
 
-Start-Transcript -path "C:\Windows\Temp\vm-provision-virtio.log" -Append -force
+Start-Transcript -path "$env:VMSCRIPTS\Logs\provision-virtio.log" -Append -force
 
 # fist, install all drivers available
 Write-Output 'Installing the virtio drivers...'
