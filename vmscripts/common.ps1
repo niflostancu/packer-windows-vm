@@ -8,5 +8,5 @@ if ( -not $env:VMSCRIPTS ) { $global:VMSCRIPTS = "C:\Windows\vmscripts" }
 New-Item -ItemType directory -Force -Path "$VMSCRIPTS\Logs" | out-null
 
 # import VM runner modules
-Import-Module "$VMSCRIPTS\lib\VMRunner"
+Import-Module "$VMSCRIPTS\lib\VMScripts"
 

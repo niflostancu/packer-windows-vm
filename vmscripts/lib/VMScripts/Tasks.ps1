@@ -88,6 +88,7 @@ $innerScript
             $info = ($task | Get-ScheduledTaskInfo)
             $lastResult = $info.LastTaskResult
             Write-Verbose ("Task finished! Started at: {0}, had exit code: {1}" -f $info.LastRunTime, $lastResult)
+            return $lastResult
         }
     } catch {
         Write-Error "Error while scheduling task: $_" -ErrorAction Continue
