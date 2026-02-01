@@ -20,27 +20,33 @@ $vmEnvFile = "$vmScriptsRoot\vm-env.json"
 Save-VMEnvFile $vmEnvFile
 
 function Run-Script ($ScriptPath) {
-    $flags = Get-VMScriptFlags $ScriptPath
+    $baseName = (Get-Item $ScriptPath).BaseName
+    $normalizedName = ($baseName.ToLowerInvariant() -replace '[^a-z0-9_]+', '_')
     $snippet = @"
 `$ErrorActionPreference = 'Stop'
 `$PSNativeCommandUseErrorActionPreference = `$true
-`$InformationPreference = "Continue"
-. `"$vmScriptsRoot\common.ps1`"
-Restore-VMEnvFile `"$vmEnvFile`"
-
-. `"$ScriptPath`"
+`$InformationPreference = 'Continue'
+. "$vmScriptsRoot\common.ps1"
+Restore-VMEnvFile "$vmEnvFile"
+. "$ScriptPath"
 "@
-    $baseName = (Get-Item $ScriptPath).BaseName
-    $normalizedName = ($baseName.ToLowerInvariant() -replace '[^a-z0-9_]+', '_')
+
+    $flags = Get-VMScriptFlags $ScriptPath
     if ($flags.RunAsTask) {
         $timeout = if ($flags.TaskTimeout) {$flags.TaskTimeout} else {600}
         Write-Information "Running script: $baseName (as task)"
-        Invoke-VMScriptTask -TaskID "_vmscript_$normalizedName" -Wait -PipeLog -TaskTimeout $timeout `
+        $errCode = Invoke-VMScriptTask -TaskID "_vmscript_$normalizedName" -Wait -PipeLog -TaskTimeout $timeout `
             -ScriptSnippet $snippet
+        if ($errCode -ne 0) {
+            throw "Task failed with exit code $errCode"
+        }
 
     } else {
         Write-Information "Running script: $baseName"
-        powershell.exe -Command $snippet
+        powershell.exe -NoProfile -Command $snippet
+        if ($LASTEXITCODE -ne 0) {
+            throw "Script failed with exit code $LASTEXITCODE"
+        }
     }
 }
 
