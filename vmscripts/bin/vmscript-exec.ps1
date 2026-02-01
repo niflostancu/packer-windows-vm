@@ -7,12 +7,42 @@ param(
     [int]$FromIdx=0
 )
 
+$vmScriptsRoot = (Get-Item $PSScriptRoot).Parent.FullName
+
 # Stop the script when a cmdlet or a native command fails
 $ErrorActionPreference = 'Stop'
 $PSNativeCommandUseErrorActionPreference = $true
 $InformationPreference = "Continue"
+. "$vmScriptsRoot\common.ps1"
 
-. "$PSScriptRoot\..\common.ps1"
+# Save environment for sched task-based execution
+$vmEnvFile = "$vmScriptsRoot\vm-env.json"
+Save-VMEnvFile $vmEnvFile
+
+function Run-Script ($ScriptPath) {
+    $flags = Get-VMScriptFlags $ScriptPath
+    $snippet = @"
+`$ErrorActionPreference = 'Stop'
+`$PSNativeCommandUseErrorActionPreference = `$true
+`$InformationPreference = "Continue"
+. `"$vmScriptsRoot\common.ps1`"
+Restore-VMEnvFile `"$vmEnvFile`"
+
+. `"$ScriptPath`"
+"@
+    $baseName = (Get-Item $ScriptPath).BaseName
+    $normalizedName = ($baseName.ToLowerInvariant() -replace '[^a-z0-9_]+', '_')
+    if ($flags.RunAsTask) {
+        $timeout = if ($flags.TaskTimeout) {$flags.TaskTimeout} else {600}
+        Write-Information "Running script: $baseName (as task)"
+        Invoke-VMScriptTask -TaskID "_vmscript_$normalizedName" -Wait -PipeLog -TaskTimeout $timeout `
+            -ScriptSnippet $snippet
+
+    } else {
+        Write-Information "Running script: $baseName"
+        powershell.exe -Command $snippet
+    }
+}
 
 if ( -Not [System.IO.Path]::IsPathRooted($Path) ) {
     $Path = (Join-Path $VMSCRIPTS $Path) | Resolve-Path
@@ -20,7 +50,7 @@ if ( -Not [System.IO.Path]::IsPathRooted($Path) ) {
 
 if ( ( Test-Path -Path $Path -PathType Leaf ) -and ( $Path -Like "*.ps1" ) ) {
     Write-Information "Running script: $Path"
-    . $Path
+    Run-Script $Path
 
 } elseif ( Test-Path -Path $Path -PathType Container ) {
     Get-ChildItem $path -Filter '*.ps1' | Sort-Object | ForEach-Object {
@@ -31,11 +61,7 @@ if ( ( Test-Path -Path $Path -PathType Leaf ) -and ( $Path -Like "*.ps1" ) ) {
         $idx = [int]$Matches[1]
         if ( $UntilIdx -gt 0 -And ( $idx -ge $UntilIdx ) ) { return }
         if ( $FromIdx -gt 0 -And ( $idx -lt $Fromidx ) ) { return }
-        Write-Information "Running script: $($_.FullName)"
-        # reset error preference values
-        $ErrorActionPreference = 'Stop'
-        $PSNativeCommandUseErrorActionPreference = $true
-        . $_.FullName
+        Run-Script $_.FullName
     }
 } else {
     Write-Error "Could not resolve script path: $Path"

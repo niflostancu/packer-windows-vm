@@ -1,4 +1,5 @@
 # Image cleanup & optimization script
+# @RunAsTask true
 
 $ErrorActionPreference = "Stop"
 
