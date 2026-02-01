@@ -17,7 +17,7 @@ reg add "HKLM\SYSTEM\CurrentControlSet\Services\FsDepends\Parameters" `
 	/v VirtualDiskExpandOnMount /t REG_DWORD /d 4 /f
 
 # finally, enable boot log
-bcdedit /set '{bootmgr}' displaybootmenu yes
-bcdedit /set '{bootmgr}' timeout 5
+# bcdedit /set '{bootmgr}' displaybootmenu yes
+# bcdedit /set '{bootmgr}' timeout 5
 bcdedit /set '{current}' bootlog Yes
 
