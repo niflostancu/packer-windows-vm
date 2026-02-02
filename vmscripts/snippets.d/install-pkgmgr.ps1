@@ -1,7 +1,5 @@
 # Windows package managers installation
 
-$ErrorActionPreference = "Stop"
-
 Write-Output "Installing NuGet & WinGet..."
 Install-PackageProvider -Name NuGet -Force | Out-Null
 Install-Module -Name Microsoft.WinGet.Client -Force -Repository PSGallery | Out-Null
@@ -24,4 +22,6 @@ Import-Module "$env:ChocolateyInstall\helpers\chocolateyInstaller.psm1"
 
 # Install Boxstarter (used for running provisioning scripts)
 choco install --no-progress -r -y Boxstarter
+$desktopShortcut = Join-Path -Path ([Environment]::GetFolderPath('CommonDesktop')) -ChildPath "Boxstarter Shell.lnk"
+if (Test-Path $desktopShortcut) { Remove-Item -Path $desktopShortcut -Force }
 
