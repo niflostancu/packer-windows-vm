@@ -75,7 +75,7 @@ $innerScript
             Write-Verbose "Waiting for task to end..."
             $timer = [Diagnostics.Stopwatch]::StartNew()
             while ($timer.Elapsed.TotalSeconds -lt $TaskTimeout) {
-                if ($PipeLog) { $job | Receive-Job }
+                if ($PipeLog) { $job | Receive-Job | Out-Host }
                 $task = Get-ScheduledTask -TaskName $schedTaskName
                 $state = $task.State
                 if ($task.State -eq 'Ready' -or $task.State -eq 'Disabled') {
@@ -98,8 +98,9 @@ $innerScript
             Unregister-ScheduledTask -TaskName $schedTaskName -Confirm:$false -ErrorAction SilentlyContinue
         }
         Start-Sleep 1
-        if ($PipeLog) { $job | Receive-Job }
+        if ($PipeLog) { $job | Receive-Job | Out-Host }
     }
+    return $lastResult
 }
 
 function Invoke-VMRebootingTask {
