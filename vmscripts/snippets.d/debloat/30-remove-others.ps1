@@ -49,8 +49,9 @@ Write-Output "Removing scheduled task"
 Get-ScheduledTask -TaskPath '\' -TaskName 'OneDrive*' -ea SilentlyContinue | Unregister-ScheduledTask -Confirm:$false
 
 Write-Output "Removing additional OneDrive leftovers"
+# TODO: doesn't work, access denied...
 foreach ($item in (Get-ChildItem "$env:WinDir\WinSxS\*onedrive*")) {
-    Remove-Item -Recurse -Force $item.FullName
+    Remove-Item -Recurse -Force $item.FullName | out-null
 }
 
 Invoke-VMScriptTask -TaskID "debloat_rr_explorer" `

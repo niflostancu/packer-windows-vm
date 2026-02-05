@@ -2,6 +2,11 @@
 #                                        Remove Registry Keys                                              #
 ############################################################################################################
 
+# First, create the non-default registry drives
+New-PSDrive -PSProvider Registry -Root HKEY_CLASSES_ROOT -Name HKCR
+New-PSDrive -PSProvider Registry -Root HKEY_CURRENT_CONFIG -Name HKCC
+New-PSDrive -PSProvider Registry -Root HKEY_USERS -Name HKU
+
 # We need to grab all SIDs to remove at user level
 $UserSIDs = Get-ChildItem "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileList" | Select-Object -ExpandProperty PSChildName
 
@@ -38,7 +43,9 @@ $Keys = @(
 )
 ForEach ($Key in $Keys) {
     write-output "Removing $Key from registry"
-    Remove-Item $Key -Recurse
+    If (Test-Path $Key) {
+        Remove-Item $Key -Recurse
+    }
 }
 
 #Disables Windows Feedback Experience
