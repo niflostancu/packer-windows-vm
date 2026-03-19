@@ -25,7 +25,7 @@ INIT_GOAL = dev_vm
 
 # Assignment VM
 dev_vm-ver = $(APP_VM_VERSION)
-dev_vm-name = My_Gov_Apps_$(mygov-ver)
+dev_vm-name = Win10_Dev_$(dev_vm-ver)
 dev_vm-src-image = $(WIN_PKT_BASE_IMAGE)
 dev_vm-packer-src = $(WIN_PKR_SCRIPTS_DIR)/generic
 

@@ -2,7 +2,7 @@
 # Copy this as 'config.local.mk'
 
 # VM Edition ;) 
-APP_VM_VERSION = 2025
+APP_VM_VERSION = 2026
 
 # REQUIRED: you must manually clone the packer-windows-vm repository at:
 # https://github.com/niflostancu/packer-windows-vm
