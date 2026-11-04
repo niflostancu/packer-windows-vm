@@ -26,14 +26,6 @@ variable "vm_extra_envs" {
 }
 
 locals {
-  win_generic_qemuargs = concat([
-      ["-drive", "file=${var.output_directory}/{{ .Name }},if=virtio,cache=none,discard=${local.qemu_discard},format=qcow2,detect-zeroes=${local.qemu_zero}"],
-      [ "-netdev", "user,hostfwd=tcp::{{ .SSHHostPort }}-:5985,hostfwd=tcp::20122-:22,id=winnet"],
-      [ "-device", "virtio-net,netdev=winnet,id=net0"]
-    ], (var.extra_iso == "" ? [] : [
-      ["-drive", "file=${var.extra_iso},media=cdrom,index=3"]
-    ])
-  )
   envs = concat([
     "VMSCRIPTS=C:\\Windows\\vmscripts",
     "VM_DEBUG=${var.vm_debug}",
@@ -58,8 +50,8 @@ source "qemu" "windows" {
   machine_type = local.qemu_arch_machine_type
   firmware     = local.qemu_arch_firmware
   accelerator  = local.qemu_arch_accelerator
-  qemuargs     = concat(local.qemu_arch_qemuargs, local.spice_qxl_devs_qemuargs,
-                        local.win_generic_qemuargs)
+  qemuargs     = local.qemu_arch_qemuargs
+
   // Virtual Hardware Specs
   memory         = var.memory
   cpus           = var.cpus
@@ -67,8 +59,8 @@ source "qemu" "windows" {
   disk_interface = "virtio"
   net_device     = "virtio-net"
   // disk usage optimizations (unmap zeroes as free space)
-  disk_discard   = local.qemu_discard
-  disk_detect_zeroes = local.qemu_zero
+  disk_discard   = (var.qemu_unmap ? "unmap" : "")
+  disk_detect_zeroes = (var.qemu_zero != "" ? var.qemu_zero : "off")
   // skip_compaction = true
   
   // ISO & Output details

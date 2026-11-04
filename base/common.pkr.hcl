@@ -12,11 +12,14 @@ variables {
   vm_timezone = "Europe/Bucharest"
   vm_pause = 0
   vm_debug = 0
+  win_ssh_port = 20122
   disk_size = 30720
   memory = "4096"
   cpus = "4"
   output_directory = "/tmp/packer-out"
-  boot_wait = "2s"
+  boot_wait = "5s"
+  boot_key_interval = "10ms"
+  boot_command_wait = "5s"
   ssh_username = "TODO"
   ssh_password = "TODO"
 }

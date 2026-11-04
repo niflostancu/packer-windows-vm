@@ -34,7 +34,9 @@ base-name = Win_$(winverstr)_base
 base-packer-src = ./base
 base-src-image = $(WIN10_INSTALL_ISO)
 base-packer-args += $(call _packer_var,disk_size,$(DISK_SIZE))
-base-packer-args += $(call _packer_var,extra_iso,$(VIRTIO_INSTALL_ISO))
+
+VIRTIO_ISO_QEMU_ARG = file=$(VIRTIO_INSTALL_ISO),media=cdrom,index=3
+base-packer-args += $(call _packer_var,qemu_extra_drive,$(VIRTIO_ISO_QEMU_ARG))
 base-packer-args +=$(call _packer_var,install_from_idx,$(WIN10_INSTALL_FROM_IDX))
 base-packer-args +=$(call _packer_var,product_key,$(WIN10_PRODUCT_KEY))
 base-packer-args +=$(call _packer_var,install_language,$(WIN_INSTALL_LANGUAGE))

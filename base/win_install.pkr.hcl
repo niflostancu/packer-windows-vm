@@ -31,14 +31,6 @@ variable "vm_extra_envs" {
 }
 
 locals {
-  # qemu args for Base Windows install (mounting two ISOs)
-  win_base_qemuargs = concat([
-      ["-drive", "file=${var.output_directory}/{{ .Name }},if=virtio,cache=none,discard=${local.qemu_discard},format=qcow2,detect-zeroes=${local.qemu_zero}"],
-      ["-drive", "file=${var.source_image},index=0,media=cdrom"]
-    ], (var.extra_iso == "" ? [] : [
-      ["-drive", "file=${var.extra_iso},media=cdrom,index=3"]
-    ])
-  )
   envs = concat([
     "VMSCRIPTS=C:\\Windows\\vmscripts",
     "VM_DEBUG=${var.vm_debug}",
@@ -61,8 +53,7 @@ source "qemu" "windows" {
   machine_type = local.qemu_arch_machine_type
   firmware     = local.qemu_arch_firmware
   accelerator  = local.qemu_arch_accelerator
-  qemuargs     = concat(local.qemu_arch_qemuargs, local.spice_qxl_devs_qemuargs,
-                        local.win_base_qemuargs)
+  qemuargs     = local.qemu_arch_qemuargs
 
   // Virtual Hardware Specs
   memory         = var.memory
@@ -71,8 +62,8 @@ source "qemu" "windows" {
   disk_interface = "virtio"
   net_device     = "virtio-net"
   // disk usage optimizations (unmap zeroes as free space)
-  disk_discard   = local.qemu_discard
-  disk_detect_zeroes = local.qemu_zero
+  disk_discard   = (var.qemu_unmap ? "unmap" : "")
+  disk_detect_zeroes = (var.qemu_zero != "" ? var.qemu_zero : "off")
   // skip_compaction = true
   
   // ISO & Output details
@@ -98,6 +89,7 @@ source "qemu" "windows" {
   http_directory = var.http_directory
   # Windows installer in EFI mode requires pressing any key to boot...
   boot_wait = (var.use_backing_file ? null : var.boot_wait)
+  boot_key_interval = var.boot_key_interval
   boot_command = ((var.use_backing_file || local.qemu_arch_firmware == "") ? null :
     ["<wait><esc><wait><esc><wait><esc><wait><esc>"])
 
