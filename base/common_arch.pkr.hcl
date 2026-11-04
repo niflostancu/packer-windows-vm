@@ -9,6 +9,7 @@ variables {
   qemu_firmware = ""
   qemu_vgamem = "256"
   qemu_unmap = true
+  qemu_zero = "on"
 }
 variable "qemu_args" {
   type    = list(list(string))
@@ -24,6 +25,7 @@ locals {
   qemu_arch_qemuargs = concat(var.qemu_args, lookup(lookup(local.qemu_arch_defs, var.arch, {}),
     "extra_args", []))
   qemu_discard   = (var.qemu_unmap ? "unmap" : "")
+  qemu_zero   = (var.qemu_unmap && var.qemu_zero == "" ? "unmap" : var.qemu_zero)
 
   # qemu args for QXL + SPICE integration 
   spice_qxl_devs_qemuargs = [

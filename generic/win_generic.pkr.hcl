@@ -27,7 +27,7 @@ variable "vm_extra_envs" {
 
 locals {
   win_generic_qemuargs = concat([
-      ["-drive", "file=${var.output_directory}/{{ .Name }},if=virtio,cache=writeback,discard=${local.qemu_discard},format=qcow2,detect-zeroes=${local.qemu_discard}"],
+      ["-drive", "file=${var.output_directory}/{{ .Name }},if=virtio,cache=none,discard=${local.qemu_discard},format=qcow2,detect-zeroes=${local.qemu_zero}"],
       [ "-netdev", "user,hostfwd=tcp::{{ .SSHHostPort }}-:5985,hostfwd=tcp::20122-:22,id=winnet"],
       [ "-device", "virtio-net,netdev=winnet,id=net0"]
     ], (var.extra_iso == "" ? [] : [
@@ -68,7 +68,7 @@ source "qemu" "windows" {
   net_device     = "virtio-net"
   // disk usage optimizations (unmap zeroes as free space)
   disk_discard   = local.qemu_discard
-  disk_detect_zeroes = local.qemu_discard
+  disk_detect_zeroes = local.qemu_zero
   // skip_compaction = true
   
   // ISO & Output details

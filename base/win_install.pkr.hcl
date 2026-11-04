@@ -33,7 +33,7 @@ variable "vm_extra_envs" {
 locals {
   # qemu args for Base Windows install (mounting two ISOs)
   win_base_qemuargs = concat([
-      ["-drive", "file=${var.output_directory}/{{ .Name }},if=virtio,cache=writeback,discard=${local.qemu_discard},format=qcow2,detect-zeroes=${local.qemu_discard}"],
+      ["-drive", "file=${var.output_directory}/{{ .Name }},if=virtio,cache=none,discard=${local.qemu_discard},format=qcow2,detect-zeroes=${local.qemu_zero}"],
       ["-drive", "file=${var.source_image},index=0,media=cdrom"]
     ], (var.extra_iso == "" ? [] : [
       ["-drive", "file=${var.extra_iso},media=cdrom,index=3"]
@@ -72,7 +72,7 @@ source "qemu" "windows" {
   net_device     = "virtio-net"
   // disk usage optimizations (unmap zeroes as free space)
   disk_discard   = local.qemu_discard
-  disk_detect_zeroes = local.qemu_discard
+  disk_detect_zeroes = local.qemu_zero
   // skip_compaction = true
   
   // ISO & Output details

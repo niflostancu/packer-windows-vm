@@ -24,6 +24,8 @@ DISK_SIZE ?= 35840
 WIN10_INSTALL_FROM_IDX ?= 
 WIN_INSTALL_LANGUAGE ?= $(strip $(if $(findstring EnglishInternational,$(WIN10_INSTALL_ISO)),en-GB,en-US))
 PACKER_ARGS_EXTRA =  $(call _packer_var,vm_no_upgrade,$(NO_UPGRADE))
+# disable qemu's detect_zeroes=discard (very slow / gets stuck)
+#PACKER_ARGS_EXTRA += $(call _packer_var,qemu_zero,off)
 SUDO ?= sudo
 
 WIN_VERSION ?= 10
