@@ -3,6 +3,8 @@
 
 $ErrorActionPreference = "Stop"
 
+choco install --no-progress -y sdelete
+
 # Run disk cleanup utility
 $cleanupKeys = @(
     "Active Setup Temp Folders",
@@ -61,7 +63,29 @@ Remove-Item "$localTemp\*" -Recurse -Force -ErrorAction SilentlyContinue
 Remove-Item "$env:SystemRoot\SoftwareDistribution*" -Recurse -Force -ErrorAction SilentlyContinue
 
 # From: https://github.com/windowsbox/powershellmodules (WindowsBox.Compact)
-Optimize-DiskUsage
+Write-Output "Cleaning Windows Update Files"
+Remove-Item "C:\Windows\SoftwareDistribution\Download" -Recurse -Force -ErrorAction SilentlyContinue
+mkdir -Force C:\Windows\SoftwareDistribution\Download
+
+Write-Output "Cleaning Temp Files"
+try {
+    Takeown /d Y /R /f "C:\Windows\Temp\*"
+    Icacls "C:\Windows\Temp\*" /GRANT:r administrators:F /T /c /q  2>&1
+    Remove-Item "C:\Windows\Temp\*" -Recurse -Force -ErrorAction SilentlyContinue
+    Remove-Item "C:\Logs" -Recurse -Force -ErrorAction SilentlyContinue
+    Remove-Item "C:\inetpub" -Recurse -Force -ErrorAction SilentlyContinue
+    Remove-Item "C:\PerfLogs" -Recurse -Force -ErrorAction SilentlyContinue
+} catch {
+    Write-Output 'Failed to remove some temp files'
+}
+
+Write-Output "Defragging C: Drive"
+Optimize-Volume -DriveLetter C
+
+# Note: this is veeery slow on qemu with discard unmap
+#Optimize-DiskUsage
+#Write-Output "Zeroing out disk space..."
+#sdelete -z C:
 
 Get-PSDrive -PSProvider FileSystem
 
