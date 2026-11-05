@@ -42,14 +42,22 @@ foreach ($key in $cleanupKeys) {
 }
 CleanMgr.exe /sagerun:100 /verylowdisk
 # wait neccesary as CleanMgr.exe spins off separate processes...
-while (Get-Process -Name @("cleanmgr","dismhost") -ErrorAction SilentlyContinue) {
-    Start-Sleep -Seconds 1
+$deadline = (Get-Date).AddSeconds(600)
+do { Start-Sleep -Seconds 1 }
+while ((Get-Process -Name @("cleanmgr", "dismhost") -EA SilentlyContinue) `
+    -and (Get-Date) -lt $deadline)
+if (Get-Process -Name @("cleanmgr", "dismhost") -EA SilentlyContinue) {
+    Stop-Process -Name cleanmgr -Force -ErrorAction SilentlyContinue
 }
 
 # Clean Windows startup image
 dism.exe /online /Quiet /Cleanup-Image /StartComponentCleanup /ResetBase
-while (Get-Process -Name @("dismhost") -ErrorAction SilentlyContinue) {
-    Start-Sleep -Seconds 1
+$deadline = (Get-Date).AddSeconds(600)
+do { Start-Sleep -Seconds 1 }
+while ((Get-Process -Name @("dismhost") -EA SilentlyContinue) `
+    -and (Get-Date) -lt $deadline)
+if (Get-Process -Name @("dismhost") -EA SilentlyContinue) {
+    Stop-Process -Name cleanmgr -Force -ErrorAction SilentlyContinue
 }
 
 # Disable Windows Update
