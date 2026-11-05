@@ -86,6 +86,8 @@ try {
 } catch {
     Write-Output 'Failed to remove some temp files'
 }
+Write-Output "Removing Chocolatey cache..."
+choco cache remove -y -f
 
 Write-Output "Defragging C: Drive"
 Optimize-Volume -DriveLetter C
