@@ -26,8 +26,9 @@ variable "vm_extra_envs" {
 }
 
 locals {
+  _vmscripts = "C:\\Windows\\vmscripts"
   envs = concat([
-    "VMSCRIPTS=C:\\Windows\\vmscripts",
+    "VMSCRIPTS=${local._vmscripts}",
     "VM_DEBUG=${var.vm_debug}",
     "VM_NO_UPGRADE=${var.vm_no_upgrade}",
     "VM_NO_PROVISION=${var.vm_no_provision}",
@@ -35,7 +36,7 @@ locals {
   ], var.vm_extra_envs)
 
   _no_run_mid_stage = (var.vm_stage2_idx == var.vm_stage3_idx)
-  _vm_runner = "C:\\Windows\\vmscripts\\bin\\${var.vm_install_script}"
+  _vm_runner = "${local._vmscripts}\\bin\\${var.vm_install_script}"
   shutdown_command = "shutdown /s /t 0 /f"
   execute_command = "powershell -ExecutionPolicy Bypass -Command \"{{.Path}}\""
 }
@@ -94,9 +95,12 @@ build {
   # default VM build pipeline: copy scripts, (stage + reboot)^3, breakpoint
 
   provisioner "powershell" {
-    inline = (var.vm_no_provision >= 1 ? ["Write-Output '<stage1 skipped>'"] : [
+    inline = concat(
+      ["Remove-Item \"C:\\Windows\\Temp\\vm-env.json\" -Recurse -Force -ErrorAction SilentlyContinue"],
+      (var.vm_no_provision >= 1 ? ["Write-Output '<stage1 skipped>'"] : [
         "& '${local._vm_runner}' -Path '${var.vm_install_tasks}' -UntilIdx ${var.vm_stage2_idx}",
       ])
+    )
     elevated_user = var.ssh_username
     elevated_password = var.ssh_password
     execute_command = local.execute_command

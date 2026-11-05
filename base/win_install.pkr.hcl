@@ -117,9 +117,12 @@ build {
   # .. do windows updates (20 -> 30), reboot, stage 2 (30 -> 99)
 
   provisioner "powershell" {
-    inline = (var.vm_no_provision >= 1 ? ["Write-Output '<skipped>'"] : [
+    inline = concat(
+      ["Remove-Item \"C:\\Windows\\Temp\\vm-env.json\" -Recurse -Force -ErrorAction SilentlyContinue"],
+      (var.vm_no_provision >= 1 ? ["Write-Output '<skipped>'"] : [
         "& '${local._vm_runner}' -Path '${var.vm_install_tasks}' -UntilIdx 20",
       ])
+    )
     elevated_user = var.ssh_username
     elevated_password = var.ssh_password
     execute_command = local.execute_command

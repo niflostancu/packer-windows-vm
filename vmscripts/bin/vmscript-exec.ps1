@@ -16,8 +16,12 @@ $InformationPreference = "Continue"
 . "$vmScriptsRoot\common.ps1"
 
 # Save environment for sched task-based execution
-$vmEnvFile = "$vmScriptsRoot\vm-env.json"
-Save-VMEnvFile $vmEnvFile
+$vmEnvFile = "C:\Windows\Temp\vm-env.json"
+if (-Not (Test-Path $vmEnvFile)) {
+    # Only store the original environment (to prevent child calls outside Packer 
+    # from overriding it)
+    Save-VMEnvFile $vmEnvFile
+}
 
 function Run-Script ($ScriptPath) {
     $baseName = (Get-Item $ScriptPath).BaseName
